@@ -1,0 +1,62 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Status
+
+The design comes from the plan in `~/.claude/plans/goal-is-to-write-vivid-walrus.md`. The code follows it, with one addition: `skeleton_ok` re-checks the hereditary rules inside the payload, so hand-built skeletons are also filtered.
+
+## Purpose
+
+Rough estimator of the number of chemically stable molecules, given a maximum **heavy-atom** count N and an element list:
+- Counts follow GDB-17 conventions: hydrogens are implicit, and only constitutional isomers count (no stereoisomers).
+- Output is a per-size count for every n ≤ N, plus the cumulative total.
+
+Stack: pure Python (numpy is allowed but currently unused), with networkx used only for ring/cycle finding. **No RDKit**, which is unavailable and must not be added.
+
+## Commands
+
+```bash
+pip install -e ".[test]"              # deps: networkx (pytest for tests)
+pytest                                # all tests
+pytest tests/test_counts.py::test_alkanes   # single test
+ruff check --line-length 120 .
+python -m chemuniverse --max-atoms 12 --elements C N O F --exact-up-to 6 --samples 10 --seed 0   # --method knuth for probes
+```
+
+## Architecture (package `chemuniverse/`)
+
+There is one generation tree, and it is used in two ways:
+
+- **Tree nodes** are labeled skeletons: connected simple graphs with element labels.
+  - They are stored as a tuple of labels plus adjacency bitmasks (`graph.py`).
+  - Only *hereditary* constraints prune the tree: degree ≤ max valence, and no banned heteroatom pairs.
+- **Children** (`tree.py`) come from McKay canonical augmentation:
+  - Add one atom bonded to a non-empty subset of the existing atoms.
+  - Deduplicate children by canonical form.
+  - Accept a child only if the new vertex is in the same automorphism orbit as the canonically chosen non-cut vertex.
+  - This yields each isomorphism class exactly once.
+- **Canonical labeling** (`canon.py`) is written by hand in pure Python: color refinement, then an individualization–refinement search. Its API is `canonical_form()` and `same_orbit()`.
+- **Payload per node** (`bonds.py`, `count_molecules`):
+  - Enumerate bond orders 1–3 per edge by backtracking, then apply the full rules (`rules.py`).
+  - Each molecule is keyed by the canonical form of the skeleton labeled with `(element, H count)`, so Kekulé/resonance structures collapse into one molecule.
+- **Exact mode** is a breadth-first traversal of the tree up to `k_exact`, which defaults to 6.
+- **Estimate mode** covers levels deeper than `k_exact`. `estimate(..., method=)` chooses the sampler.
+  - `stratified_estimate` (the default) is Chen's stratified sampling. Per level, it keeps one weighted representative per `stratum()`, where a stratum is (atoms per free-valence count, ring count).
+  - `knuth_estimate` uses random probes. It is heavy-tailed, so its error bars are unreliable.
+  - Both return independent samples, which `_summarize` turns into mean ± SE.
+- **Rules** (`RuleConfig`, each group toggleable):
+  - valence and connectivity;
+  - bond-order limits;
+  - GDB-style strain filters: small-ring triple bonds and allenes, double bonds in 3- or 4-membered rings, an approximate Bredt rule;
+  - heteroatom filters: banned O–O, N–O and halogen–heteroatom bonds, no enols, no hemiacetals or hemiaminals.
+  - There are validation switches `allow_rings` and `allow_multiple_bonds`.
+
+## Correctness anchors for tests
+
+- Alkanes (C only, no rings, no multiple bonds) for n = 1..10 must give 1,1,1,2,3,5,9,18,35,75 (OEIS A000602).
+- C n=2 → 3, and C,O n=2 → 5.
+- Benzene counts once.
+- For n ≤ 6, both samplers must fall within 4 SE of the exact count.
+- A C,N,O,F run up to 11 atoms gives ≈7×10⁸, about 30× GDB-11 (2.6×10⁷).
+- `tests/test_counts.py::test_tree_matches_brute_force` checks the canonical augmentation against brute-force enumeration.

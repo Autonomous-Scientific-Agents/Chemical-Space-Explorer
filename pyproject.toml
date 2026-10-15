@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chemuniverse"
+version = "0.1.0"
+description = "Rough estimates of the number of chemically stable molecules"
+requires-python = ">=3.9"
+dependencies = ["networkx>=3.1"]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.scripts]
+chemuniverse = "chemuniverse.__main__:main"
+
+[tool.setuptools]
+packages = ["chemuniverse"]
