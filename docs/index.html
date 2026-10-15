@@ -1,0 +1,138 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#080e20"><title>Chemical Space Explorer</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 5% -12%,#253f64,transparent 39%),radial-gradient(ellipse at 100% 0%,#28204b,transparent 28%),#080e20;color:#eef5ff;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}button,input{font:inherit}button{cursor:pointer}a{color:#86e2e7} .wrap{max-width:1340px;width:calc(100% - 42px);margin:auto}.top{display:flex;justify-content:space-between;align-items:center;padding:25px 0;border-bottom:1px solid #2c3b58}.brand{font-weight:820;font-size:14px;letter-spacing:.08em}.brand i{display:inline-grid;place-items:center;background:#183b53;border:1px solid #69e1e5;color:#8fe7e9;border-radius:10px;width:35px;height:35px;font-style:normal;margin-right:8px}.muted{color:#9fb1cc}.eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#9bbfe5;font-weight:760}.hero{padding:40px 0 30px}h1{font-size:clamp(38px,5.5vw,76px);line-height:1.04;letter-spacing:-.06em;margin:12px 0 18px}h1 em{font-style:normal;color:#79e8e4}.lead{color:#b9cae3;line-height:1.7;max-width:880px;font-size:16px}.layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.8fr);gap:15px}.panel{border:1px solid #293b5b;border-radius:18px;background:linear-gradient(150deg,#1a2b47,#10182d 78%);box-shadow:0 16px 45px #0003;padding:22px}.tinytitle{font-size:14px;font-weight:780;margin:0}.note{font-size:12px;line-height:1.65;color:#9fb4d1;margin:7px 0 17px}.presets{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px}.preset{color:#b8cbde;border:1px solid #365170;background:#152641;border-radius:100px;font-size:12px;font-weight:650;padding:8px 11px}.preset.active{background:#85e4df;color:#092731;border-color:#85e4df}.preset:hover,.element:hover{border-color:#9af7f3}.periodic{display:grid;grid-template-columns:repeat(18,minmax(0,1fr));gap:4px}.element{min-width:0;aspect-ratio:1.13;background:#20304d;color:#8296b5;border:1px solid #3a4b6d;border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1px 0;transition:transform .1s}.element:hover{transform:translateY(-2px)}.element .num{font-size:9px;opacity:.8}.element .sym{font-size:clamp(10px,1vw,15px);font-weight:800}.element.off{opacity:.29}.element.on{background:linear-gradient(145deg,#a1fae4,#72bce5);border-color:#7bf5ed;color:#092a37;opacity:1}.element.bad.on{background:#d4aff9;color:#281838;border-color:#e7cfff}.element.h{background:#254f6a;color:#d7fbf5;border-color:#60afc5;opacity:1;cursor:help}.placeholder{display:grid;place-items:center;border:1px dashed #354664;border-radius:4px;color:#6480a6;font-size:9px}.serieslabel{grid-column:1/span 3;display:flex;align-items:center;font-size:9px;color:#7892b9}.chips{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:17px;font-size:12px}.chip{border:1px solid #3c6680;background:#19344a;border-radius:7px;padding:4px 7px;color:#9deee7;font-weight:750}.chip.bad{background:#39284e;color:#ebbefb;border-color:#74568f}.result{min-height:395px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}.result:before{content:"";position:absolute;right:-90px;top:-110px;width:270px;height:270px;background:#6adbe318;filter:blur(35px);border-radius:50%;pointer-events:none}.kicker{text-transform:uppercase;letter-spacing:.15em;color:#a4b9df;font-size:10px;font-weight:790}.value{font-size:clamp(54px,6vw,88px);font-weight:830;letter-spacing:-.065em;margin:25px 0 11px;line-height:1;font-variant-numeric:tabular-nums}.value .mant{background:linear-gradient(110deg,#94f4e8,#dad6ff);color:transparent;background-clip:text}.value .x{font-size:.45em;color:#96a9cb;vertical-align:20%;margin:0 6px}.value sup{font-size:.48em;color:#c1cdec;letter-spacing:-.03em}.status{font-size:12px;color:#b1c1d9;line-height:1.65}.info{margin-top:18px;padding:13px 15px;background:#182a45;border:1px solid #335674;border-radius:11px;color:#b7c9e2;font-size:12px;line-height:1.65}.foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid #30415e;padding-top:16px;margin-top:18px}.met{font-size:10px;letter-spacing:.1em;color:#9bb0cc;text-transform:uppercase}.metval{font-size:17px;font-weight:770;margin-top:5px}.sliderbox{margin-top:16px}.sliderhead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.nValue{color:#75e9e6;font-size:35px;font-weight:800}input[type=range]{appearance:none;width:100%;margin:25px 0 10px;border-radius:30px;height:7px;background:linear-gradient(90deg,#64e4e2,#9186ef,#4e577d);cursor:pointer}input[type=range]::-webkit-slider-thumb{appearance:none;background:#fff;width:22px;height:22px;border:5px solid #5edce0;border-radius:50%;box-shadow:0 0 0 5px #55d4e325}input[type=range]::-moz-range-thumb{background:#fff;width:16px;height:16px;border:5px solid #5edce0;border-radius:50%}.ticks{display:flex;justify-content:space-between;color:#92a7c3;font-size:11px}.belowSlider{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:17px;padding-top:15px;border-top:1px solid #293955;font-size:12px;color:#afc0d8}.belowSlider input{width:65px;padding:6px;text-align:center;background:#112640;color:white;border:1px solid #47617a;border-radius:7px}.sectionhead{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;justify-content:space-between;margin:31px 0 14px}.sectionhead h2{margin:0;font-size:23px;letter-spacing:-.03em}.sectionhead span{color:#9aafc9;font-size:12px}.bench{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.cosmic{border:1px solid #2b3f5c;background:#14223a;border-radius:14px;padding:17px;min-width:0}.cosmic.hit{border-color:#72d9d399;background:#14313f}.emoji{font-size:24px}.cosmic .name{color:#b8c9dc;font-weight:700;font-size:12px;margin:10px 0 6px}.cosmic .number{font-weight:800;font-size:24px}.cosmic .diff{color:#a1b3ce;font-size:12px;line-height:1.5;margin-top:8px;min-height:35px}.chartPanel{margin-top:16px}.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:#afc2d8;margin:15px 0 8px}.legend i{display:inline-block;width:9px;height:9px;border-radius:100%;margin-right:6px}svg{width:100%;height:auto;display:block}#chart{cursor:crosshair;touch-action:pan-y}.chartnote{font-size:11px;color:#92a9c7;line-height:1.55}.twocol{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:16px 0 32px}.explain{font-size:13px;line-height:1.7;color:#aebfda}.explain b{color:#e1ecff}footer{padding:27px 0 45px;border-top:1px solid #2d3e5a;font-size:12px;color:#99adca;line-height:1.8}footer a{margin-right:13px}@media(max-width:1050px){.layout{grid-template-columns:1fr}.result{min-height:290px}.element .sym{font-size:clamp(10px,1.6vw,15px)}}@media(max-width:620px){.wrap{width:calc(100% - 24px)}.hero{padding-top:27px}.lead{font-size:14px}.panel{padding:14px}.periodic{gap:2px}.element{border-radius:3px;aspect-ratio:.9}.element .num{display:none}.element .sym{font-size:clamp(8px,2.3vw,11px)}.placeholder{font-size:6px}.serieslabel{font-size:7px}.preset{font-size:11px;padding:7px 9px}.result{min-height:300px}.value{font-size:clamp(50px,10vw,75px)}.bench{grid-template-columns:repeat(2,1fr)}.twocol{grid-template-columns:1fr}.cosmic{padding:14px}.top .muted{display:none}}
+</style></head><body><div class="wrap">
+<div class="top"><div class="brand"><i>✧</i> CHEMICAL SPACE <span style="color:#82e8e4">EXPLORER</span></div><div class="muted" style="font-size:12px">A JOURNEY FROM MOLECULES TO THE COSMOS</div></div>
+<header class="hero"><div class="eyebrow">The combinatorial chemistry of possibility</div><h1>How big is <em>chemical space?</em></h1><div class="lead">Choose the elements. Adjust the maximum molecular size. Watch possible molecular structures multiply — and compare their number with the atoms on Earth, in our galaxy, and across the observable universe.</div></header>
+<main><section class="layout"><div class="panel"><h2 class="tinytitle">01 / Choose your elements</h2><p class="note">Click the elements molecules may contain. Hydrogen is always implicitly available. Dimmed elements are outside the organic estimation model.</p><div class="presets"><button class="preset" data-preset="hydro">Hydrocarbons</button><button class="preset" data-preset="chon">C · H · O · N</button><button class="preset" data-preset="gdb">GDB-like organic</button><button class="preset" data-preset="inorg">Inorganic example</button></div><div class="periodic" id="periodic" aria-label="Interactive periodic table"></div><div class="chips" id="chips" aria-live="polite"></div></div>
+<div class="panel result"><div><div class="kicker" id="kind">Illustrative chemical-space estimate</div><div id="value" class="value" aria-live="polite"></div><div class="status" id="status"></div><div class="info" id="info"></div></div><div class="foot"><div><div class="met">Log₁₀ candidate structures</div><div class="metval" id="order"></div></div><div><div class="met" id="rangeLabel">Uncertainty range</div><div class="metval" id="estimateRange"></div></div></div></div></section>
+<section class="panel sliderbox"><div class="sliderhead"><div><h2 class="tinytitle">02 / Maximum number of heavy atoms</h2><p class="note" style="margin-bottom:0">Non-hydrogen atoms, up to and including this limit (hydrogen is implicit).</p></div><div><span class="nValue" id="nDisplay">20</span> <span class="muted" style="font-size:12px">heavy atoms</span></div></div><input type="range" min="1" max="150" value="20" id="size" aria-label="Maximum number of heavy atoms"><div class="ticks"><span>1</span><span>30</span><span>60</span><span>90</span><span>120</span><span>150</span></div><div class="belowSlider"><span>Try the GDB-like preset, then increase the slider past 100 atoms.</span><label>Jump to <input id="jump" type="number" min="1" max="150" value="20" aria-label="Heavy atom count"></label></div></section>
+<div class="sectionhead"><h2>Against the cosmic scale</h2><span>Possible types of molecules versus physical atoms: a comparison of magnitudes, not equal quantities.</span></div><section class="bench" id="bench"></section>
+<section class="panel chartPanel"><div class="sectionhead" style="margin:0"><h2>As atoms are added, possibilities explode</h2><span>Vertical scale: log₁₀(number of candidate structures)</span></div><div class="legend"><span><i style="background:#72e7e1"></i>Computed (exact + sampled)</span><span><i style="background:#72e7e1;opacity:.45"></i>Extrapolation</span><span><i style="background:#978aee"></i>±2 SE / extrapolation envelope</span><span><i style="background:#fbcf93"></i>Cosmic milestones</span></div><svg id="chart" viewBox="0 0 1000 395" role="img" aria-label="Chemical species growth curve with cosmic benchmarks"></svg><div class="chartnote">Click the plot to set the atom count. Dots mark computed sizes. There the band is ±2 standard errors of the sampler; beyond the computed range it spans extrapolation assumptions and is <b>not</b> a confidence interval.</div></section>
+<section class="twocol"><div class="panel explain"><div class="kicker">What is counted?</div><p>Neutral, closed-shell, connected molecules with implicit hydrogens, counted as <b>constitutional isomers</b> (no stereoisomers; resonance forms count once). A molecule must pass basic rules: standard valences, bond orders ≤ 3, GDB-style ring-strain filters (no small-ring triple bonds, cyclopropenes or anti-Bredt alkenes) and heteroatom filters (no O–O, N–O or halogen–heteroatom bonds, enols or hemiacetals). These are candidate structures, not experimentally verified compounds.</p></div><div class="panel explain"><div class="kicker">How is the number estimated?</div><p>Counts come from <a href="https://github.com/Autonomous-Scientific-Agents/Chemical-Universe">chemuniverse</a>. Every molecular graph is generated exactly once (canonical augmentation) and counted <b>exactly</b> up to <span id="kExact">6</span> heavy atoms. Larger sizes, up to <span id="nMax">12</span>, are <b>estimated</b> by stratified sampling of the generation tree. Beyond that the curve is extrapolated from the computed growth rate and is illustrative only. It never drops below the exact alkane counts. GDB-13/17/20 are shown for comparison; they use stricter filters, so they sit below these counts.</p></div></section></main>
+<footer><strong style="color:#edf7ff">Sources & notes</strong><div><a href="https://doi.org/10.1021/ja902302h">GDB-13</a><a href="https://doi.org/10.1021/ci300415d">GDB-17</a><a href="https://zenodo.org/records/17368725">GDB-20 (2026)</a><a href="https://www.mathe2.uni-bayreuth.de/sascha/oeis/alkane.html">Alkane isomers</a><a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html">NASA Earth facts</a><a href="https://academic.oup.com/mnras/article/494/3/4291/5821286">Milky Way stellar mass</a></div><p>Atom counts are rough estimates: Earth ~10⁵⁰, solar system ~10⁵⁷, Milky Way ~10⁶⁸, observable universe ~10⁸⁰. We compare mathematical species counts against atom counts to give a sense of scale. GDB-13, GDB-17 and GDB-20 use different chemical filters and allowed atoms. Counts were precomputed by <code>scripts/build_site_data.py</code> (<span id="genDate"></span>); no backend required.</p></footer>
+</div>
+<script src="data.js"></script>
+<script>
+const allSymbols = `H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Ru Rh Pd Ag Cd In Sn Sb Te I Xe Cs Ba La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu Hf Ta W Re Os Ir Pt Au Hg Tl Pb Bi Po At Rn Fr Ra Ac Th Pa U Np Pu Am Cm Bk Cf Es Fm Md No Lr Rf Db Sg Bh Hs Mt Ds Rg Cn Nh Fl Mc Lv Ts Og`.split(' ');
+const numberBySymbol = Object.fromEntries(allSymbols.map((symbol,i)=>[symbol,i+1]));
+const mainRows = [
+ [[1,'H'],[18,'He']],
+ [[1,'Li'],[2,'Be'],[13,'B'],[14,'C'],[15,'N'],[16,'O'],[17,'F'],[18,'Ne']],
+ [[1,'Na'],[2,'Mg'],[13,'Al'],[14,'Si'],[15,'P'],[16,'S'],[17,'Cl'],[18,'Ar']],
+ `K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr`.split(' ').map((s,i)=>[i+1,s]),
+ `Rb Sr Y Zr Nb Mo Tc Ru Rh Pd Ag Cd In Sn Sb Te I Xe`.split(' ').map((s,i)=>[i+1,s]),
+ `Cs Ba _ Hf Ta W Re Os Ir Pt Au Hg Tl Pb Bi Po At Rn`.split(' ').map((s,i)=>[i+1,s]),
+ `Fr Ra _ Rf Db Sg Bh Hs Mt Ds Rg Cn Nh Fl Mc Lv Ts Og`.split(' ').map((s,i)=>[i+1,s])
+];
+const lanth=`La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu`.split(' ');
+const actin=`Ac Th Pa U Np Pu Am Cm Bk Cf Es Fm Md No Lr`.split(' ');
+const supported = new Set(['C','N','O','S','F','Cl','Br','I']);
+const gdbSet = ['C','N','O','S','F','Cl','Br','I'];
+const presets={hydro:['C'], chon:['C','N','O'], gdb:gdbSet, inorg:['Si','O']};
+const weights={N:.27,O:.23,S:.12,F:.095,Cl:.095,Br:.095,I:.095};
+const benchmarks=[{name:'Earth',icon:'🌍',p:50,range:'10⁵⁰–10⁵¹'},{name:'Solar system',icon:'☀️',p:57,range:'~10⁵⁷'},{name:'Milky Way',icon:'🌌',p:68,range:'10⁶⁷–10⁶⁸'},{name:'Observable universe',icon:'✨',p:80,range:'~10⁸⁰'}];
+// Exact constitutional isomer counts of saturated acyclic alkanes C_nH_(2n+2), without stereochemistry.
+// Source: https://www.mathe2.uni-bayreuth.de/sascha/oeis/alkane.html
+const alkanes = `1 1 1 2 3 5 9 18 35 75 159 355 802 1858 4347 10359 24894 60523 148284 366319 910726 2278658 5731580 14490245 36797588 93839412 240215803 617105614 1590507121 4111846763 10660307791 27711253769 72214088660 188626236139 493782952902 1295297588128 3404490780161 8964747474595 23647478933969 62481801147341 165351455535782 438242894769226 1163169707886427 3091461011836856 8227162372221203 21921834086683418 58481806621987010 156192366474590639 417612400765382272 1117743651746953270 2994664179967370611 8031081780535296591 21557771913572630901 57919180873148437753 155745431857549699124 419149571193411829372`.split(' ').map(BigInt);
+const alkaneCumulative=[];let tally=0n;
+for(const c of alkanes){tally+=c;alkaneCumulative.push(tally)}
+function logBig(n){const s=String(n);return s.length-1+Math.log10(Number(s.slice(0,Math.min(14,s.length)))/10**(Math.min(14,s.length)-1))}
+function alkaneLog(n, extrapSlope=.44){if(n<=alkaneCumulative.length)return logBig(alkaneCumulative[n-1]);return logBig(alkaneCumulative.at(-1))+(n-alkaneCumulative.length)*extrapSlope}
+const log13=Math.log10(977468314),log17=Math.log10(166400000000),log20=Math.log10(32000000000000);
+let selected=new Set(gdbSet), n=20;
+const el=id=>document.getElementById(id);
+const equals = (a,b)=>a.size===b.length&&b.every(s=>a.has(s));
+const DATA=window.CHEMUNIVERSE_DATA, HAL=['F','Cl','Br','I'], MAXN=150;
+const logAdd=(a,b)=>{const m=Math.max(a,b);return m+Math.log10(1+10**(Math.min(a,b)-m))};
+const ALKANE_RATE=Math.log10(2.9529); // asymptotic growth per carbon of alkane isomers
+function dataKey(){return 'C'+['N','O','S'].filter(s=>selected.has(s)).join('')+'_h'+HAL.filter(s=>selected.has(s)).length}
+function canEstimate(){return !!DATA&&selected.has('C')&&[...selected].every(s=>supported.has(s))}
+const seriesCache={};
+// Cumulative log10 counts for sizes 1..MAXN: computed rows, then extrapolation.
+function series(){const key=dataKey();if(seriesCache[key])return seriesCache[key];
+ const rows=DATA.sets[key].rows,out=[];let cum=0,v=0;
+ for(const [m,c,se,exact] of rows){cum+=c;v+=se*se;const sd=Math.sqrt(v);
+  out.push({n:m,central:Math.log10(cum),low:Math.log10(Math.max(cum-2*sd,cum/10)),high:Math.log10(cum+2*sd),kind:exact?'exact':'sampled',se:sd,cum});}
+ const N=rows.length,per=rows.map(r=>Math.log10(r[1])),d=per[N-1]-per[N-2];
+ let pl=per[N-1],ph=per[N-1],cl=out[N-1].low,ch=out[N-1].high;
+ for(let m=N+1;m<=MAXN;m++){
+  ph+=d; pl+=ALKANE_RATE+(d-ALKANE_RATE)*0.8**(m-N);
+  ch=logAdd(ch,ph); cl=Math.max(logAdd(cl,pl),alkaneLog(m));
+  out.push({n:m,central:(cl+ch)/2,low:cl,high:ch,kind:'extrapolated'});
+ }
+ return seriesCache[key]=out;}
+function atN(m){return series()[m-1]}
+function powerHTML(log){let e=Math.floor(log),m=10**(log-e);m=Math.round(m*10)/10;if(m>=10){m=1;e++}return `<span class="mant">${m.toFixed(1)}</span><span class="x">×</span>10<sup>${e}</sup>`}
+function sup(n){return String(Math.round(n)).replace(/-/g,'⁻').replace(/[0-9]/g,x=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[Number(x)])}
+function fullSymbolButton(sym,row,col){const b=document.createElement('button');b.type='button';b.className='element';b.style.gridRow=row;b.style.gridColumn=col;
+ b.title=`${sym} (atomic number ${numberBySymbol[sym]})${supported.has(sym)||sym==='H'?'':' — outside current organic model'}`;
+ b.setAttribute('aria-label',`${sym}, atomic number ${numberBySymbol[sym]}`);
+ b.innerHTML=`<span class="num">${numberBySymbol[sym]}</span><span class="sym">${sym}</span>`;
+ if(sym==='H'){b.classList.add('h');b.title='Hydrogen is always implicitly included';b.setAttribute('aria-disabled','true');}
+ else{b.addEventListener('click',()=>{if(selected.has(sym))selected.delete(sym);else selected.add(sym);update()});}
+ el('periodic').appendChild(b);return b;}
+for(const [r,places] of mainRows.entries())for(const [col,sym] of places){if(sym==='_'){const d=document.createElement('div');d.className='placeholder';d.textContent=r===5?'57–71':'89–103';d.style.gridRow=r+1;d.style.gridColumn=col;el('periodic').appendChild(d)}else fullSymbolButton(sym,r+1,col)}
+for(const [row,arr,label] of [[8,lanth,'LANTHANIDES'],[9,actin,'ACTINIDES']]){
+ const x=document.createElement('div');x.className='serieslabel';x.textContent=label;x.style.gridRow=row;el('periodic').appendChild(x);
+ arr.forEach((s,i)=>fullSymbolButton(s,row,i+4));
+}
+for(const b of document.querySelectorAll('[data-preset]')) b.addEventListener('click',()=>{selected=new Set(presets[b.dataset.preset]);update()});
+el('size').addEventListener('input',e=>{n=Number(e.target.value);update()});
+el('jump').addEventListener('change',e=>{n=Math.max(1,Math.min(150,Math.round(Number(e.target.value)||1)));update()});
+function refreshSelections(){for(const b of document.querySelectorAll('.element')){const s=b.querySelector('.sym').textContent;b.classList.toggle('on',selected.has(s));b.classList.toggle('off',!supported.has(s)&&s!=='H');b.classList.toggle('bad',!supported.has(s)&&s!=='H');b.setAttribute('aria-pressed',selected.has(s)?'true':'false')}
+ for(const b of document.querySelectorAll('[data-preset]'))b.classList.toggle('active',equals(selected,presets[b.dataset.preset]));
+ el('chips').replaceChildren();const label=document.createElement('span');label.className='muted';label.textContent='Selected: H (implicit)';el('chips').appendChild(label);
+ for(const s of [...selected].sort((a,b)=>numberBySymbol[a]-numberBySymbol[b])){const chip=document.createElement('span');chip.className='chip'+(supported.has(s)?'':' bad');chip.textContent=s;el('chips').appendChild(chip)}
+}
+function update(){el('size').value=n;el('jump').value=n;el('nDisplay').textContent=n;refreshSelections();const ok=canEstimate();
+ if(!ok){const bad=[...selected].filter(s=>!supported.has(s));el('value').innerHTML='<span class="mant">—</span>';el('kind').textContent='Outside the model';el('status').textContent=bad.length?'Selected element(s) '+bad.join(', ')+' fall outside the fitted organic-molecule scope.':'Select carbon (C) to use the organic-molecule estimator.';el('info').textContent='This avoids inventing a stable-compound count for metals, inorganic clusters, coordination chemistry or non-carbon systems. Try a supported organic preset.';el('order').textContent='Not available';el('estimateRange').textContent='Not available';}
+ else{const v=atN(n),P=DATA.params;el('value').innerHTML=powerHTML(v.central);el('order').textContent=v.central.toFixed(1);
+ el('estimateRange').textContent=v.kind==='exact'?'exact':'10'+sup(v.low.toFixed(1))+' – 10'+sup(v.high.toFixed(1));
+ el('rangeLabel').textContent=v.kind==='extrapolated'?'Extrapolation envelope':v.kind==='sampled'?'±2 SE sampling range':'Uncertainty range';
+ const kinds={exact:'Exact enumeration',sampled:'Computed by stratified sampling',extrapolated:'Extrapolated estimate'};
+ el('kind').textContent=kinds[v.kind];
+ const cnt=v.cum?Math.round(v.cum).toLocaleString('en-US'):'';
+ el('status').textContent=v.kind==='exact'?`Exactly ${cnt} molecules with up to ${n} heavy atoms.`:
+  v.kind==='sampled'?`About ${Number(v.cum.toPrecision(3)).toLocaleString('en-US')} ± ${Number(v.se.toPrecision(2)).toLocaleString('en-US')} molecules with up to ${n} heavy atoms (exact to ${P.k_exact}, sampled beyond).`:
+  `Computed up to ${P.max_atoms} heavy atoms; values beyond are an illustrative extrapolation of the computed growth rate.`;
+ let ref='';
+ if(equals(selected,gdbSet)&&n===17)ref=' For comparison, GDB-17 enumerated 166.4 billion structures with stricter filters.';
+ else if(equals(selected,gdbSet)&&n===20)ref=' For comparison, GDB-20 estimates about 32 trillion candidates with stricter filters.';
+ else if(equals(selected,['C','N','O','S','Cl'])&&n===13)ref=' For comparison, GDB-13 enumerated 977,468,314 structures with stricter filters.';
+ el('info').innerHTML=`<b>Not a count of proven stable species.</b> Candidate structures that pass basic valence, strain and heteroatom rules.${ref}${n<=alkanes.length?' A precisely counted subspace: <b>'+alkaneCumulative[n-1].toLocaleString('en-US')+'</b> saturated acyclic alkanes with ≤ '+n+' carbons.':''}`;
+ }
+ drawBench(ok);drawChart(ok);
+}
+function drawBench(ok){el('bench').replaceChildren();const val=ok?atN(n).central:null;
+ for(const b of benchmarks){const tile=document.createElement('div');tile.className='cosmic'+(ok&&val>=b.p?' hit':'');let comparison='Choose a supported organic set';
+ if(ok){const delta=val-b.p;comparison=Math.abs(delta)<.5?'Similar order of magnitude':`${Math.abs(delta).toFixed(1)} orders ${delta>=0?'more':'fewer'} possible species than atoms`}
+ tile.innerHTML=`<div class="emoji">${b.icon}</div><div class="name">${b.name}</div><div class="number">${b.range} <span class="muted" style="font-size:12px">atoms</span></div><div class="diff">${comparison}</div>`;el('bench').appendChild(tile);
+ }}
+function drawChart(ok){const svg=el('chart'),X1=57,X2=958,Y1=20,Y2=343,maxP=150;
+ const upper=ok?atN(150).high:110;const yMax=Math.max(100,Math.ceil((upper+4)/20)*20);
+ const xx=t=>X1+(t-1)/(maxP-1)*(X2-X1),yy=log=>Y2-Math.max(0,Math.min(yMax,log))/yMax*(Y2-Y1);
+ let markup=`<defs><linearGradient id="area" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#9982f5" stop-opacity=".33"/><stop offset="1" stop-color="#765cc0" stop-opacity=".07"/></linearGradient></defs>`;
+ for(let p=0;p<=yMax;p+=20){const y=yy(p);markup+=`<line x1="${X1}" y1="${y}" x2="${X2}" y2="${y}" stroke="#344665" stroke-dasharray="3 6"/><text x="${X1-12}" y="${y+4}" font-size="12" text-anchor="end" fill="#98aec9">${p}</text>`}
+ for(let p=20;p<=150;p+=20)markup+=`<text x="${xx(p)}" y="${Y2+22}" font-size="12" text-anchor="middle" fill="#92a7c8">${p}</text>`;
+ markup+=`<text x="${X2}" y="${Y2+48}" fill="#9bb2cf" font-size="12" text-anchor="end">Maximum heavy atoms</text>`;
+ for(const b of benchmarks){const y=yy(b.p);markup+=`<line x1="${X1}" y1="${y}" x2="${X2}" y2="${y}" stroke="#f4be80" stroke-opacity=".7" stroke-dasharray="6 5"/><text x="${X2-3}" y="${y-6}" font-size="12" fill="#fbd6a7" text-anchor="end">${b.name} ~10${sup(b.p)}</text>`}
+ if(ok){const nums=Array.from({length:150},(_,j)=>atN(j+1));
+ const polygon=nums.map((z,j)=>`${xx(j+1)},${yy(z.high)}`).join(' ')+' '+nums.slice().reverse().map((z,j)=>`${xx(150-j)},${yy(z.low)}`).join(' ');
+ markup+=`<polygon points="${polygon}" fill="url(#area)"/>`;
+ const NC=nums.filter(z=>z.kind!=='extrapolated').length;
+ const pathOf=zs=>zs.map((z,j)=>`${j?'L':'M'}${xx(z.n).toFixed(2)} ${yy(z.central).toFixed(2)}`).join(' ');
+ markup+=`<path d="${pathOf(nums.slice(NC-1))}" fill="none" stroke="#77e9e1" stroke-opacity=".55" stroke-width="2.6" stroke-dasharray="7 6" stroke-linecap="round"/>`;
+ markup+=`<path d="${pathOf(nums.slice(0,NC))}" fill="none" stroke="#77e9e1" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"/>`;
+ for(const z of nums.slice(0,NC))markup+=`<circle cx="${xx(z.n)}" cy="${yy(z.central)}" r="2.6" fill="#77e9e1"><title>${z.n} atoms: 10^${z.central.toFixed(2)} (${z.kind})</title></circle>`;
+ const cur=atN(n).central;markup+=`<line x1="${xx(n)}" y1="${Y1}" x2="${xx(n)}" y2="${Y2}" stroke="#a2d5e5" stroke-opacity=".55" stroke-dasharray="3 6"/><circle cx="${xx(n)}" cy="${yy(cur)}" r="7" fill="#87f6ea" stroke="#162940" stroke-width="3"/><text x="${Math.min(X2-55,Math.max(X1+55,xx(n)))}" y="${Math.max(19,yy(cur)-14)}" text-anchor="middle" font-size="13" font-weight="750" fill="#d7faff">10${sup(cur.toFixed(1))}</text>`;
+ }
+ // Independently reported reference values; not necessarily the same element set / filters.
+ for(const [at,log,name] of [[13,log13,'GDB-13'],[17,log17,'GDB-17'],[20,log20,'GDB-20 est.']]){markup+=`<circle cx="${xx(at)}" cy="${yy(log)}" r="4" stroke="#e1bdff" fill="#141e33" stroke-width="2"><title>${name}: ${log.toFixed(2)} log10 structures</title></circle>`}
+ markup+=`<rect id="hitbox" x="${X1}" y="${Y1}" width="${X2-X1}" height="${Y2-Y1}" fill="transparent"/>`;
+ svg.innerHTML=markup;
+ el('hitbox').addEventListener('click',e=>{const rect=svg.getBoundingClientRect();const px=(e.clientX-rect.left)/rect.width*1000;n=Math.min(150,Math.max(1,Math.round(1+(px-X1)/(X2-X1)*149)));update()});
+}
+if(DATA){el('kExact').textContent=DATA.params.k_exact;el('nMax').textContent=DATA.params.max_atoms;el('genDate').textContent='generated '+DATA.generated}
+update();
+</script></body></html>
