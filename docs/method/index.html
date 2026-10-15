@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080e20">
+<meta name="description" content="A pedagogical guide to estimating the number of chemically stable molecules: graphs, valence, stability rules, canonical augmentation and tree sampling.">
+<title>Counting Chemical Space</title>
+<style>
+:root{--bg:#080e20;--panel:#14223a;--panel2:#1a2b47;--line:#2b3f5c;--fg:#eef5ff;--text:#c3d2e8;--muted:#9fb1cc;--accent:#79e8e4;--accent2:#978aee;--warn:#ebbefb;--warnbg:#39284e;--good:#9deee7;--code:#0d1830}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 5% -12%,#253f64,transparent 39%),radial-gradient(ellipse at 100% 0%,#28204b,transparent 28%),var(--bg);color:var(--fg);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;line-height:1.7}
+a{color:#86e2e7}
+.wrap{max-width:980px;margin:auto;padding:0 16px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:22px 0;border-bottom:1px solid var(--line);font-size:13px}
+.brand{font-weight:820;letter-spacing:.08em}.brand a{color:var(--fg);text-decoration:none}
+.top nav a{margin-left:14px}
+header{padding:40px 0 10px}
+.eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#9bbfe5;font-weight:760}
+h1{font-size:clamp(34px,5vw,58px);line-height:1.06;letter-spacing:-.05em;margin:12px 0 16px}h1 em{font-style:normal;color:var(--accent)}
+.lead{color:#b9cae3;font-size:17px;max-width:760px}
+.toc{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:14px 20px;margin:26px 0;font-size:14px}
+.toc ol{margin:6px 0;padding-left:22px;columns:2;column-gap:30px}.toc li{break-inside:avoid}
+section{margin:44px 0}
+h2{font-size:clamp(23px,3vw,30px);letter-spacing:-.03em;margin:0 0 6px;line-height:1.2}
+h2 .num{color:var(--accent);font-weight:800;margin-right:10px}
+h3{font-size:17px;margin:26px 0 4px;color:#e1ecff}
+p,li{color:var(--text);font-size:15.5px}
+b,strong{color:#e8f1ff}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.88em;background:var(--code);border:1px solid var(--line);border-radius:5px;padding:1px 5px;color:#cfe3ff}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px;overflow-x:auto;font-size:13px;line-height:1.55}pre code{border:0;padding:0;background:none}
+.box{border:1px solid var(--line);background:linear-gradient(150deg,var(--panel2),#10182d 80%);border-radius:14px;padding:16px 20px;margin:18px 0}
+.box.key{border-color:#3c6680}.box .kicker{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#a4b9df;font-weight:790}
+.formula{font-family:Georgia,'Times New Roman',serif;font-size:18px;text-align:center;color:#e8f1ff;margin:14px 0;overflow-x:auto}
+.mols{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:14px 0}
+.mol{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:6px 8px 9px;text-align:center}
+.mol svg{width:100%;height:auto;display:block}
+.mol .cap{font-size:12px;color:var(--text);line-height:1.35}.mol .why{font-size:11px;color:var(--warn);line-height:1.35;margin-top:2px}
+.mol.bad{background:var(--warnbg);border-color:#74568f}
+.mol.bad .cap{color:#e9d3f7}
+.tablewrap{overflow-x:auto;margin:14px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:650;font-size:12px}
+tr.hl td{color:var(--good);font-weight:700}
+.seg{display:inline-flex;border:1px solid #365170;border-radius:100px;overflow:hidden;margin:4px 0}
+.seg button{font:inherit;font-size:12px;font-weight:650;background:#152641;color:#b8cbde;border:0;padding:7px 13px;cursor:pointer}
+.seg button[aria-pressed=true]{background:#85e4df;color:#092731}
+.rule{display:grid;grid-template-columns:150px 1fr;gap:4px 18px;border-top:1px solid var(--line);padding:14px 0}
+.rule .name{font-weight:780;color:#e1ecff;font-size:14px}
+.rule p{margin:0 0 6px}
+.tree svg{width:100%;height:auto;display:block}
+.small{font-size:13px;color:var(--muted)}
+footer{padding:27px 0 45px;border-top:1px solid var(--line);font-size:13px;color:#99adca;margin-top:50px}
+footer a{margin-right:14px}
+@media(max-width:640px){.toc ol{columns:1}.rule{grid-template-columns:1fr}.lead{font-size:15px}p,li{font-size:15px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top"><div class="brand"><a href="../">✧ CHEMICAL SPACE <span style="color:#82e8e4">EXPLORER</span></a></div><nav><a href="../">Explorer</a><a href="./">Method</a><a href="../agent-traces/">How it was built</a></nav></div>
+
+<header>
+<div class="eyebrow">A guide to the method</div>
+<h1>How do you count <em>molecules that don't exist yet?</em></h1>
+<p class="lead">The explorer reports numbers such as 10<sup>11</sup> possible molecules with at most 12 heavy atoms. Nobody has listed them all. This page explains, step by step, how the numbers are obtained. It covers what counts as a molecule, which chemistry rules decide whether a structure is plausibly stable, how the program lists every structure exactly once, and how it estimates sizes too large to list.</p>
+</header>
+
+<nav class="toc" aria-label="Contents"><strong>Contents</strong>
+<ol>
+<li><a href="#graphs">A molecule is a graph</a></li>
+<li><a href="#symmetry">Why naive counting fails</a></li>
+<li><a href="#skeletons">Step 1: skeletons, exactly once</a></li>
+<li><a href="#decorate">Step 2: bond orders and hydrogens</a></li>
+<li><a href="#rules">The stability rules</a></li>
+<li><a href="#effect">How much each rule removes</a></li>
+<li><a href="#sampling">Step 3: estimating what you can't list</a></li>
+<li><a href="#extrapolate">Beyond the computed sizes</a></li>
+<li><a href="#checks">How we know it works</a></li>
+<li><a href="#limits">What the numbers do and don't mean</a></li>
+<li><a href="#try">Try it yourself</a></li>
+</ol></nav>
+
+<section id="graphs">
+<h2><span class="num">1</span>A molecule is a graph</h2>
+<p>For counting purposes, a molecule's structural formula is all that matters: which atoms are bonded to which, and with what bond order. In mathematical terms that is a <b>graph</b>. Atoms are vertices labeled by element, and bonds are edges labeled 1, 2 or 3.</p>
+<p>Three conventions keep the counting well defined. They are the conventions of the GDB databases (GDB-11, -13, -17), so the numbers can be compared with them.</p>
+<ul>
+<li><b>Size is the number of heavy atoms</b>, meaning atoms other than hydrogen. Hydrogens are not placed explicitly: every atom is filled up to its normal valence with H. Ethanol, CH<sub>3</sub>CH<sub>2</sub>OH, has 3 heavy atoms.</li>
+<li><b>Only constitutional isomers count.</b> Two molecules differ if their atoms are connected differently. Mirror images and <i>cis/trans</i> forms (stereoisomers) count once.</li>
+<li><b>Molecules are neutral, closed-shell and connected.</b> There are no ions, no radicals and no salts.</li>
+</ul>
+<p>With carbon only and 2 heavy atoms there are exactly three molecules:</p>
+<div class="mols" id="m-c2"></div>
+<p>With carbon and oxygen there are two more: methanol (CH<sub>3</sub>OH) and formaldehyde (CH<sub>2</sub>=O). The O–O molecule (hydrogen peroxide) is excluded by a rule explained below, so the count is 5.</p>
+</section>
+
+<section id="symmetry">
+<h2><span class="num">2</span>Why naive counting fails</h2>
+<p>A first idea is to number the atoms 1…n, decide for each pair whether they are bonded, and count the valid choices. This overcounts badly, because a molecule's atoms carry no numbers. Propane is the same molecule whether its central carbon is called atom 1, 2 or 3. Numbering the atoms gives 3 versions of the propane skeleton and only 1 of the cyclopropane triangle. For larger molecules the factor approaches n! and depends on each molecule's symmetry, so it cannot simply be divided out.</p>
+<div class="box key"><div class="kicker">The core problem</div>
+<p style="margin:6px 0 0">Two numbered graphs describe the same molecule exactly when one can be relabeled into the other. Such graphs are called <b>isomorphic</b>. Counting molecules means counting graphs <i>up to isomorphism</i>, so the program must be able to tell when two drawings are the same molecule. Doing that for every pair of millions of graphs is far too slow.</p></div>
+<p>The usual remedy is a <b>canonical form</b>: a procedure that renumbers any graph in a standard way, so that isomorphic graphs come out identical. Then "same molecule?" reduces to "same canonical form?", which a hash table answers instantly. Our canonical labeling is written from scratch in pure Python. It works in two stages:</p>
+<ol>
+<li><b>Color refinement.</b> Every atom starts with its element as its color. The program then repeatedly re-colors each atom by (its own color, the multiset of its neighbors' colors) until the colors stop changing. After this, the atoms of propane split into "end carbon" and "middle carbon", and in most molecules every atom ends up with a distinct color.</li>
+<li><b>Individualization.</b> If several atoms still share a color (in a symmetric molecule such as benzene, every carbon does), the program tries giving each candidate a unique color in turn and refines again. It keeps the numbering that gives the lexicographically smallest adjacency matrix. Symmetries found along the way prune equivalent branches.</li>
+</ol>
+</section>
+
+<section id="skeletons">
+<h2><span class="num">3</span>Step 1: skeletons, each exactly once</h2>
+<p>The work is split into two layers. First the program builds <b>skeletons</b>: connected graphs whose atoms are labeled by element but whose bonds have no order yet. It then decorates each skeleton with bond orders (step 2). One skeleton, such as a chain of three carbons, supports several molecules (propane, propene, propyne, allene).</p>
+<p>Skeletons are grown one atom at a time. Each new atom bonds to one or more existing atoms. Grown carelessly, the same skeleton appears many times, once for each order in which its atoms could have been added. The program avoids this with <b>canonical augmentation</b>, a technique due to Brendan McKay (1998):</p>
+<div class="box"><div class="kicker">Canonical augmentation, in one rule</div>
+<p style="margin:6px 0 0">Every skeleton with n+1 atoms has exactly one <b>canonical parent</b>: the n-atom skeleton obtained by deleting its "canonical atom". That atom is chosen by a fixed recipe that depends only on the structure. Here it is the atom with the lowest (element, number of neighbors, refined color), and it must be removable without disconnecting the molecule. When the program adds an atom to a parent, it <b>keeps the child only if the atom it just added could be that canonical atom</b>, meaning they are related by a symmetry of the child.</p></div>
+<p>Each child therefore has exactly one accepted parent, and the skeletons form a <b>tree</b> in which every skeleton appears exactly once. No global list of "seen" structures is needed, so the tree can be explored in pieces, which matters for the sampling in step 3. The figure shows the start of the all-carbon tree. The 3-atom chain is the parent of the 4-atom chain, the branched star and the 4-ring. The triangle is the parent of the three skeletons that contain a triangle.</p>
+<div class="tree" id="tree"></div>
+<p class="small">The number of carbon skeletons at each level, 1, 1, 2, 6, 21, 78, 353, 1929, … equals the number of connected graphs with every vertex of degree ≤ 4. The program reproduces this known sequence, which is one of its correctness checks.</p>
+<p>Some rules can be checked on skeletons, which prunes the tree early. A rule qualifies if it holds for every fragment of a valid molecule:</p>
+<ul>
+<li>no atom has more neighbors than its valence (carbon at most 4, oxygen at most 2, fluorine 1);</li>
+<li>no forbidden element pairs are bonded (O–O, N–O, halogen–heteroatom; see the rules below).</li>
+</ul>
+<p>Pruning with such <i>hereditary</i> rules is safe: if a skeleton breaks one, every larger skeleton grown from it breaks it too.</p>
+</section>
+
+<section id="decorate">
+<h2><span class="num">4</span>Step 2: bond orders and hydrogens</h2>
+<p>For each skeleton, the program tries every combination of bond orders (1, 2 or 3 on each bond). The number of hydrogens on each atom is whatever completes its valence:</p>
+<div class="formula">H on atom = valence − (sum of the orders of its bonds), and it must be ≥ 0</div>
+<div class="tablewrap"><table style="max-width:520px">
+<tr><th>Element</th><th>Valence</th><th>Highest bond order</th></tr>
+<tr><td>C, Si</td><td>4</td><td>3</td></tr>
+<tr><td>N, P, B</td><td>3</td><td>3</td></tr>
+<tr><td>O, S</td><td>2</td><td>2</td></tr>
+<tr><td>F, Cl, Br, I</td><td>1</td><td>1</td></tr>
+</table></div>
+<p class="small">An optional <code>--hypervalent</code> mode also allows S with valence 4 or 6 and P with valence 5, as in sulfones and phosphates.</p>
+<p><b>Resonance counts once.</b> Benzene can be drawn with its double bonds in two alternating positions (Kekulé structures). Both drawings describe one molecule. The program therefore identifies a molecule by its skeleton plus the hydrogen count on each atom, not by the exact placement of double bonds. Both benzene drawings have one H on every carbon, so they collapse into one entry. The molecule is accepted if <i>any</i> of its bond-order assignments passes the rules.</p>
+<div class="mols" id="m-benz"></div>
+</section>
+
+<section id="rules">
+<h2><span class="num">5</span>The stability rules</h2>
+<p>Valence alone allows many structures that no chemist would expect to keep in a bottle: strained rings with triple bonds, chains of oxygen atoms, molecules that rearrange immediately into something else. The program applies four groups of rules, modeled on the filters used for the GDB databases. Each group can be switched off from the command line, so you can see what it does.</p>
+
+<div class="rule"><div class="name">Valence &amp; connectivity</div><div>
+<p>Every atom has its normal neutral valence, hydrogens are implicit, and the molecule is a single connected piece. This rule defines what a molecule is here, and it is always on.</p></div></div>
+
+<div class="rule"><div class="name">Bond-order limits</div><div>
+<p>Bond orders are at most 3. Oxygen and sulfur form at most double bonds and halogens only single bonds. With normal valences this follows from valence already, so the limits matter mainly in hypervalent mode (<code>--no-bond-order-limits</code>).</p></div></div>
+
+<div class="rule"><div class="name">Ring strain</div><div>
+<p>Small rings force bond angles far from their preferred values. Multiple bonds, which prefer 120° or 180°, make this much worse.</p>
+<ul style="margin:0">
+<li>No double bond in a 3- or 4-membered ring, which excludes cyclopropene and cyclobutene.</li>
+<li>No triple bond in a ring smaller than 8 atoms. Cyclooctyne is the smallest isolable cycloalkyne.</li>
+<li>No cumulated bonds (an atom with two multiple bonds, as in allenes, C=C=C) inside a ring smaller than 9 atoms.</li>
+<li><b>Bredt's rule:</b> no double bond at a bridgehead atom of a small bicyclic system (rings ≤ 7). The bridge prevents the p-orbitals from lining up.</li>
+</ul>
+<p style="margin-top:6px">Switch off with <code>--no-strain</code>.</p></div></div>
+
+<div class="rule"><div class="name">Heteroatom filters</div><div>
+<p>These exclude bonds and groups that are typically unstable, explosive or that rearrange spontaneously:</p>
+<ul style="margin:0">
+<li>No O–O bonds (peroxides) and no N–O bonds. The N–O ban follows GDB, and <code>--allow-n-o</code> lifts it.</li>
+<li>No bond between a halogen and N, O, S or another halogen.</li>
+<li>No <b>enols</b> (OH on a C=C carbon). They tautomerize into the ketone or aldehyde, which is counted instead.</li>
+<li>No <b>hemiacetals, hemiaminals or gem-diols</b>: an sp<sup>3</sup> carbon carrying two N/O atoms, at least one with an H. They fall apart into a carbonyl compound plus an alcohol or amine.</li>
+</ul>
+<p style="margin-top:6px">Switch off with <code>--no-heteroatom</code>.</p></div></div>
+
+<h3>Rules in action: three-carbon molecules</h3>
+<p>Valence allows 9 molecules with three carbons. The strain rules remove the four that are 3-membered rings containing multiple bonds, which leaves 5.</p>
+<div class="mols" id="m-c3"></div>
+
+<h3>Rules in action: heteroatoms</h3>
+<p>Each of these structures satisfies valence, but a heteroatom filter rejects it:</p>
+<div class="mols" id="m-het"></div>
+</section>
+
+<section id="effect">
+<h2><span class="num">6</span>How much each rule removes</h2>
+<p>The table gives exact counts at each size, adding one rule group at a time (each row includes the rules above it). Choose an element set:</p>
+<div class="seg" role="group" aria-label="Element set" id="setButtons"></div>
+<div class="tablewrap"><table id="effectTable"></table></div>
+<p>Two things stand out. The rules remove a large fraction of structures, and the fraction grows with size: for C, N, O, F at 6 atoms only about 21% of the valence-allowed molecules survive. Still, the numbers grow roughly geometrically, by a factor of 5–10 for each added atom with mixed elements. This geometric growth is the "combinatorial explosion" of chemical space.</p>
+</section>
+
+<section id="sampling">
+<h2><span class="num">7</span>Step 3: estimating what you can't list</h2>
+<p>Exact enumeration in pure Python is practical up to about 7 heavy atoms (for C, N, O, F: about 1 s for 6 atoms and about 10 s for 7). At 12 atoms there are up to about 10<sup>11</sup> molecules, too many to list in any reasonable time. Because each skeleton appears exactly once in the tree, the program can instead <b>estimate the size of the tree by sampling it</b>.</p>
+
+<h3>Knuth's estimator: one random walk</h3>
+<p>Donald Knuth (1975) proposed a simple way to estimate the size of a tree you can't afford to traverse. Start at the root and repeatedly step to a randomly chosen child, writing down the number of children <i>b</i><sub>1</sub>, <i>b</i><sub>2</sub>, … at each step. The product</p>
+<div class="formula">estimated number of nodes at depth d &nbsp;=&nbsp; b<sub>1</sub> × b<sub>2</sub> × … × b<sub>d</sub></div>
+<p>is an <b>unbiased</b> estimate: averaged over many random walks, it gives the true count. Multiplying by the number of molecules on the skeleton reached at each depth estimates the molecule count instead. The catch is that the estimate is heavy-tailed. Most walks wander into sparse corners of the tree, and a rare walk through a bushy region carries an enormous weight. In our tests, runs with 300 and 1000 walks to 10 atoms disagreed by a factor of 3, and the error bars were not reliable. Knuth's estimator is still available (<code>--method knuth</code>), but it is not the default.</p>
+
+<h3>Stratified sampling: many walks that share the work</h3>
+<p>The default is Pang-Chi Chen's (1992) <b>stratified sampling</b>, which runs many coordinated walks at once:</p>
+<ol>
+<li>Start with every skeleton at the exact frontier (6 atoms), each with weight 1.</li>
+<li>Expand all current skeletons into their children. Each child inherits its parent's weight.</li>
+<li>Group the children into <b>strata</b>, classes of skeletons expected to have similar subtrees. Here a stratum is "how many atoms have 0, 1, 2, … free valences, and how many rings". Within each stratum, keep <b>one</b> representative, give it the <b>total weight</b> of the group, and choose which member survives at random with probability proportional to its weight. This keeps the estimate unbiased.</li>
+<li>The estimate for this size is the sum over representatives of weight × (molecules on that skeleton). Then repeat from step 2 for the next size.</li>
+</ol>
+<p>Each pass explores a broad cross-section of the tree, one representative of every structural type, instead of a single path. It costs more than one Knuth walk but has far lower variance. Running 8–10 independent passes gives a mean and a standard error:</p>
+<div class="formula">estimate = mean of passes, &nbsp; standard error = (standard deviation of passes) / √(number of passes)</div>
+<div class="box"><div class="kicker">A check you can see</div>
+<p style="margin:6px 0 0">For pure carbon at 7 atoms the exact count is <b>1035</b>. The explorer's data was built with sampling from 7 atoms onward and gives <b>1017 ± 53</b>, well within one standard error. The test suite checks every sampler against exact counts in this way.</p></div>
+<p>The relative error grows slowly with size. At 12 atoms the per-size estimates in the explorer's data carry a standard error of about 3–20%, depending on the element set. Cumulative totals are somewhat tighter, and the explorer shows a ±2 SE band.</p>
+</section>
+
+<section id="extrapolate">
+<h2><span class="num">8</span>Beyond the computed sizes</h2>
+<p>The data behind the explorer is computed up to 12 heavy atoms. For larger sizes the explorer <b>extrapolates</b>, labels the result as an extrapolation, and shows an envelope rather than a single line:</p>
+<ul>
+<li><b>Upper edge:</b> the growth factor per added atom stays at its value between 11 and 12 atoms.</li>
+<li><b>Lower edge:</b> the growth factor decays gradually toward the alkane growth rate. Branched alkanes grow by a factor of about 2.95 per carbon in the limit of large size. The lower edge is never allowed to fall below the alkane count itself.</li>
+<li><b>Central value:</b> the geometric midpoint of the two edges.</li>
+</ul>
+<p>Treat the large-size numbers as order-of-magnitude estimates. As a rough reference, the GDB-like preset at 20 atoms gives about 4×10<sup>18</sup> with an envelope of 10<sup>17</sup>–10<sup>20</sup>. Published estimates of "drug-like" chemical space (about 30 heavy atoms) are often quoted as about 10<sup>60</sup>. Those rest on different assumptions and are themselves only rough.</p>
+</section>
+
+<section id="checks">
+<h2><span class="num">9</span>How we know it works</h2>
+<ul>
+<li><b>Alkanes.</b> With carbon only, no rings and no multiple bonds, the program reproduces the known numbers of alkane isomers: 1, 1, 1, 2, 3, 5, 9, 18, 35, 75 for 1–10 carbons (OEIS A000602).</li>
+<li><b>Graph counts.</b> The carbon skeleton counts match the number of connected graphs with maximum degree 4.</li>
+<li><b>Brute force.</b> For up to 4 atoms, the tree is compared with a slow enumeration of every numbered graph, deduplicated by canonical form. They agree, which confirms that every skeleton appears exactly once.</li>
+<li><b>Hand counts.</b> C<sub>2</sub> gives 3 and C,O at 2 atoms gives 5. Benzene counts once. Each rule removes exactly the structures it should.</li>
+<li><b>Samplers vs exact.</b> Both estimators fall within 4 standard errors of the exact count for small sizes.</li>
+<li><b>GDB-11 sanity check.</b> With C, N, O, F up to 11 atoms we estimate about 6×10<sup>8</sup> molecules, about 25 times the 2.6×10<sup>7</sup> in GDB-11. GDB uses much stricter functional-group and ring filters, so a larger count is expected. The same order of magnitude shows that the rules are doing roughly the right job.</li>
+</ul>
+</section>
+
+<section id="limits">
+<h2><span class="num">10</span>What the numbers do and don't mean</h2>
+<ul>
+<li>These are <b>candidate structures that pass simple rules</b>, not known or synthesizable compounds. For comparison, the CAS Registry lists a few hundred million substances.</li>
+<li>Tautomers count separately (apart from the enol ban). The strain and Bredt rules are heuristics, not energy calculations.</li>
+<li>Charged species, radicals, stereoisomers and most inorganic chemistry are not counted.</li>
+<li>Stricter rules, such as GDB's functional-group filters or drug-likeness, would give smaller numbers. Looser ones (hypervalent S and P, N–O bonds) give larger ones. The ranking between element sets and the rate of growth are more robust than any single number.</li>
+</ul>
+</section>
+
+<section id="try">
+<h2><span class="num">11</span>Try it yourself</h2>
+<p>The code is pure Python with no dependencies: <a href="https://github.com/Autonomous-Scientific-Agents/Chemical-Universe">github.com/Autonomous-Scientific-Agents/Chemical-Universe</a>.</p>
+<pre><code>git clone https://github.com/Autonomous-Scientific-Agents/Chemical-Universe
+cd Chemical-Universe
+python -m chemuniverse --max-atoms 8 --elements C          # exact up to 6, sampled beyond
+python -m chemuniverse --max-atoms 6 --elements C N O --no-strain     # see what strain rules do
+python -m chemuniverse --max-atoms 10 --elements C N O F --no-rings --no-multiple-bonds
+python -m chemuniverse --max-atoms 11 --elements C N O F --samples 10 --seed 1</code></pre>
+<p>The program prints the count at each size, its standard error, whether it is exact or estimated, and the running total.</p>
+</section>
+
+<footer>
+<div><a href="../">← Back to the explorer</a><a href="../agent-traces/">How this was built</a><a href="https://github.com/Autonomous-Scientific-Agents/Chemical-Universe">Source code</a></div>
+<p>References: B. D. McKay, "Isomorph-free exhaustive generation", <i>J. Algorithms</i> 26 (1998); D. E. Knuth, "Estimating the efficiency of backtrack programs", <i>Math. Comp.</i> 29 (1975); P. C. Chen, "Heuristic sampling: a method for predicting the performance of tree searching programs", <i>SIAM J. Comput.</i> 21 (1992); T. Fink &amp; J.-L. Reymond, <a href="https://doi.org/10.1021/ci600423u">GDB-11</a> (2007); L. C. Blum &amp; J.-L. Reymond, <a href="https://doi.org/10.1021/ja902302h">GDB-13</a> (2009); L. Ruddigkeit et al., <a href="https://doi.org/10.1021/ci300415d">GDB-17</a> (2012); R. S. Bohacek et al., <i>Med. Res. Rev.</i> 16 (1996).</p>
+</footer>
+</div>
+
+<script>
+// Tiny structure renderer: atoms [x, y, label], bonds [i, j, order].
+const NS='http://www.w3.org/2000/svg';
+function svgEl(tag,attrs){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);return e}
+function draw({atoms,bonds},w=140,h=96){
+  const s=svgEl('svg',{viewBox:`0 0 ${w} ${h}`,role:'img'});
+  for(const [i,j,o] of bonds){
+    const [x1,y1]=atoms[i],[x2,y2]=atoms[j],dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy),nx=-dy/L*4,ny=dx/L*4;
+    const offs=o===1?[0]:o===2?[-.5,.5]:[-1,0,1];
+    for(const f of offs)s.appendChild(svgEl('line',{x1:x1+nx*f,y1:y1+ny*f,x2:x2+nx*f,y2:y2+ny*f,stroke:'#8fb3d9','stroke-width':1.6}));
+  }
+  for(const [x,y,lab] of atoms){
+    if(!lab)continue;
+    const t=svgEl('text',{x,y:y+4,'text-anchor':'middle','font-size':12,'font-weight':700,fill:lab[0]==='O'||lab.startsWith('HO')||lab.endsWith('OH')?'#ff9f9f':lab[0]==='N'||lab.startsWith('HN')?'#9fc4ff':lab[0]==='F'?'#b9f5a0':'#e8f1ff','paint-order':'stroke',stroke:'#14223a','stroke-width':7});
+    t.textContent=lab;s.appendChild(t);
+  }
+  return s;
+}
+function gallery(id,items){
+  const root=document.getElementById(id);
+  for(const it of items){
+    const d=document.createElement('div');d.className='mol'+(it.bad?' bad':'');
+    d.appendChild(draw(it));
+    d.insertAdjacentHTML('beforeend',`<div class="cap">${it.cap}</div>`+(it.bad?`<div class="why">✗ ${it.bad}</div>`:''));
+    root.appendChild(d);
+  }
+}
+const line2=(a,b,o)=>({atoms:[[40,48,a],[100,48,b]],bonds:[[0,1,o]]});
+gallery('m-c2',[
+  {...line2('H₃C','CH₃',1),cap:'ethane'},
+  {...line2('H₂C','CH₂',2),cap:'ethene'},
+  {...line2('HC','CH',3),cap:'ethyne'},
+]);
+const chain3=(a,b,c,o1,o2)=>({atoms:[[25,60,a],[70,34,b],[115,60,c]],bonds:[[0,1,o1],[1,2,o2]]});
+const tri=(a,b,c,o01,o12,o20)=>({atoms:[[70,18,a],[35,76,b],[105,76,c]],bonds:[[0,1,o01],[1,2,o12],[2,0,o20]]});
+gallery('m-c3',[
+  {...chain3('H₃C','CH₂','CH₃',1,1),cap:'propane'},
+  {...chain3('H₃C','CH','CH₂',1,2),cap:'propene'},
+  {...chain3('H₃C','C','CH',1,3),cap:'propyne'},
+  {...chain3('H₂C','C','CH₂',2,2),cap:'allene'},
+  {...tri('CH₂','H₂C','CH₂',1,1,1),cap:'cyclopropane'},
+  {...tri('CH₂','HC','CH',1,2,1),cap:'cyclopropene',bad:'C=C in a 3-ring'},
+  {...tri('C','HC','CH',2,1,2),cap:'cyclopropadiene',bad:'C=C in a 3-ring, cumulated'},
+  {...tri('CH₂','C','C',1,3,1),cap:'cyclopropyne',bad:'C≡C in a 3-ring'},
+  {...tri('C','C','C',2,2,2),cap:'cyclic C₃',bad:'C=C in a 3-ring, cumulated'},
+]);
+gallery('m-het',[
+  {atoms:[[22,48,'H₃C'],[60,48,'O'],[90,48,'O'],[124,48,'H']],bonds:[[0,1,1],[1,2,1],[2,3,1]],cap:'methyl hydroperoxide',bad:'O–O bond'},
+  {atoms:[[25,48,'H₃C'],[70,48,'NH'],[112,48,'OH']],bonds:[[0,1,1],[1,2,1]],cap:'N-methylhydroxylamine',bad:'N–O bond'},
+  {atoms:[[30,48,'H₃C'],[75,48,'O'],[112,48,'F']],bonds:[[0,1,1],[1,2,1]],cap:'methyl hypofluorite',bad:'halogen–O bond'},
+  {...chain3('H₂C','CH','OH',2,1),cap:'vinyl alcohol (enol)',bad:'enol → becomes acetaldehyde'},
+  {atoms:[[70,30,'CH₂'],[28,68,'HO'],[112,68,'OH']],bonds:[[0,1,1],[0,2,1]],cap:'methanediol',bad:'gem-diol → formaldehyde + water'},
+  {atoms:[[20,64,'HO'],[55,34,'CH₂'],[90,64,'O'],[125,34,'CH₃']],bonds:[[0,1,1],[1,2,1],[2,3,1]],cap:'methoxymethanol',bad:'hemiacetal'},
+  {...chain3('H₃C','C','O',1,2),atoms:[[25,60,'H₃C'],[70,34,'CH'],[115,60,'O']],cap:'acetaldehyde: the tautomer counted instead of the enol'},
+]);
+// benzene, two Kekulé structures
+const hex=[0,1,2,3,4,5].map(k=>[70+30*Math.cos(Math.PI/2+k*Math.PI/3),48-30*Math.sin(Math.PI/2+k*Math.PI/3),'CH']);
+gallery('m-benz',[
+  {atoms:hex,bonds:[[0,1,2],[1,2,1],[2,3,2],[3,4,1],[4,5,2],[5,0,1]],cap:'Kekulé form A'},
+  {atoms:hex,bonds:[[0,1,1],[1,2,2],[2,3,1],[3,4,2],[4,5,1],[5,0,2]],cap:'Kekulé form B'},
+]);
+document.getElementById('m-benz').insertAdjacentHTML('beforeend','<div class="mol" style="display:grid;place-items:center"><div class="cap">Same hydrogens on every atom (6 × CH)<br><b style="color:var(--good)">→ one molecule</b></div></div>');
+
+// Generation tree for carbon skeletons, levels 1–4.
+(function(){
+  const W=900,H=330,s=svgEl('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'Canonical augmentation tree of carbon skeletons up to four atoms'});
+  const nodes={
+    a1:{x:450,y:30,p:[[0,0]],e:[]},
+    a2:{x:450,y:105,p:[[-14,0],[14,0]],e:[[0,1]]},
+    path3:{x:250,y:185,p:[[-24,8],[0,-8],[24,8]],e:[[0,1],[1,2]]},
+    tri:{x:650,y:185,p:[[0,-14],[-16,12],[16,12]],e:[[0,1],[1,2],[2,0]]},
+    path4:{x:90,y:285,p:[[-33,8],[-11,-8],[11,8],[33,-8]],e:[[0,1],[1,2],[2,3]]},
+    star:{x:230,y:285,p:[[0,0],[0,-20],[-18,12],[18,12]],e:[[0,1],[0,2],[0,3]]},
+    c4:{x:370,y:285,p:[[-14,-14],[14,-14],[14,14],[-14,14]],e:[[0,1],[1,2],[2,3],[3,0]]},
+    paw:{x:530,y:285,p:[[0,-12],[-16,12],[16,12],[0,-34]],e:[[0,1],[1,2],[2,0],[0,3]]},
+    diamond:{x:670,y:285,p:[[0,-20],[-18,0],[18,0],[0,20]],e:[[0,1],[0,2],[1,2],[1,3],[2,3]]},
+    k4:{x:810,y:285,p:[[0,-20],[-19,14],[19,14],[0,2]],e:[[0,1],[1,2],[2,0],[3,0],[3,1],[3,2]]},
+  };
+  const links=[['a1','a2'],['a2','path3'],['a2','tri'],['path3','path4'],['path3','star'],['path3','c4'],['tri','paw'],['tri','diamond'],['tri','k4']];
+  for(const [a,b] of links){const A=nodes[a],B=nodes[b];s.appendChild(svgEl('line',{x1:A.x,y1:A.y+26,x2:B.x,y2:B.y-36,stroke:'#3c5a80','stroke-width':1.5}))}
+  for(const n of Object.values(nodes)){
+    for(const [i,j] of n.e)s.appendChild(svgEl('line',{x1:n.x+n.p[i][0],y1:n.y+n.p[i][1],x2:n.x+n.p[j][0],y2:n.y+n.p[j][1],stroke:'#8fb3d9','stroke-width':2}));
+    for(const [x,y] of n.p)s.appendChild(svgEl('circle',{cx:n.x+x,cy:n.y+y,r:5.5,fill:'#79e8e4',stroke:'#14223a','stroke-width':1.5}));
+  }
+  const lab=(x,y,t)=>{const e=svgEl('text',{x,y,'font-size':13,fill:'#9fb1cc'});e.textContent=t;s.appendChild(e)};
+  lab(8,34,'1 atom: 1');lab(8,109,'2 atoms: 1');lab(8,189,'3 atoms: 2');lab(8,322,'4 atoms: 6 skeletons');
+  document.getElementById('tree').appendChild(s);
+})();
+
+// Exact counts, cumulative rule groups (computed with chemuniverse.enumerate_exact).
+const EFFECT={
+  'C':{n:8,rows:[
+    ['Skeletons (graphs)',[1,1,2,6,21,78,353,1929]],
+    ['Valence only',[1,3,9,35,143,745,4324,29415]],
+    ['+ ring strain',[1,3,5,17,55,229,1035,5599]],
+    ['+ heteroatom filters (all rules)',[1,3,5,17,55,229,1035,5599]],
+    ['Alkanes only (no rings, single bonds)',[1,1,1,2,3,5,9,18]]]},
+  'C, N, O':{n:6,rows:[
+    ['Valence only',[3,15,74,474,3546,31107]],
+    ['+ ring strain',[3,15,58,340,2330,18576]],
+    ['+ heteroatom filters (all rules)',[3,11,35,174,957,6509]]]},
+  'C, N, O, F':{n:6,rows:[
+    ['Valence only',[4,19,94,616,4687,41784]],
+    ['+ ring strain',[4,19,78,466,3249,26486]],
+    ['+ heteroatom filters (all rules)',[4,12,44,221,1253,8738]]]},
+};
+function showEffect(key){
+  const d=EFFECT[key],t=document.getElementById('effectTable');
+  let h='<tr><th>Heavy atoms →</th>'+Array.from({length:d.n},(_,i)=>`<th>${i+1}</th>`).join('')+'</tr>';
+  for(const [name,v] of d.rows)h+=`<tr class="${name.includes('all rules')?'hl':''}"><td>${name}</td>${v.map(x=>`<td>${x.toLocaleString('en-US')}</td>`).join('')}</tr>`;
+  t.innerHTML=h;
+  for(const b of document.querySelectorAll('#setButtons button'))b.setAttribute('aria-pressed',b.dataset.k===key);
+}
+const sb=document.getElementById('setButtons');
+for(const k of Object.keys(EFFECT)){const b=document.createElement('button');b.type='button';b.dataset.k=k;b.textContent=k;b.onclick=()=>showEffect(k);sb.appendChild(b)}
+showEffect('C, N, O, F');
+</script>
+</body>
+</html>
