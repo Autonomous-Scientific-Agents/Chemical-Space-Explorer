@@ -34,6 +34,15 @@ def refined_colors(labels, adj):
     return refine(_nbr_lists(adj), initial_colors(labels))
 
 
+def invariant_hash(labels, adj, rounds=3):
+    """Weisfeiler-Lehman style hash: equal for isomorphic graphs (within one process)."""
+    nbrs = _nbr_lists(adj)
+    h = [hash(lab) for lab in labels]
+    for _ in range(rounds):
+        h = [hash((h[v], tuple(sorted(h[u] for u in nb)))) for v, nb in enumerate(nbrs)]
+    return hash(tuple(sorted(h)))
+
+
 def _orbit_of(v, gens):
     orbit, stack = {v}, [v]
     while stack:

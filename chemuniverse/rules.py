@@ -6,10 +6,8 @@ checked on full molecules with bond orders and implicit hydrogens.
 """
 from dataclasses import dataclass
 
-import networkx as nx
-
 from . import elements
-from .graph import bits
+from .graph import bits, simple_cycles
 
 MAX_RING = 8  # largest ring any strain rule looks at
 
@@ -72,8 +70,7 @@ class RingInfo:
         self.bridgeheads = set()
         if len(skel.edges()) < n:  # tree
             return
-        g = nx.Graph(skel.edges())
-        cycles = [c for c in nx.simple_cycles(g, length_bound=MAX_RING)]
+        cycles = simple_cycles(skel.adj, MAX_RING)
         for c in cycles:
             k = len(c)
             for i, u in enumerate(c):

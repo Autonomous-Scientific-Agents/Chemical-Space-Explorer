@@ -1,5 +1,5 @@
 """Count distinct stable molecules on one skeleton (the tree-node payload)."""
-from .canon import canonical_form
+from .canon import canonical_form, refined_colors
 from .rules import RingInfo, edge_cap, molecule_ok, skeleton_ok
 
 
@@ -49,6 +49,11 @@ def molecules(skel, cfg):
         extra[i] = 0
 
     assign(0)
+    if len(set(refined_colors(labels, skel.adj))) == n:
+        # no symmetry: every hydrogen pattern is a distinct molecule
+        for h in accepted:
+            yield tuple(zip(labels, h))
+        return
     seen = set()
     for h in accepted:
         form = canonical_form(list(zip(labels, h)), skel.adj)

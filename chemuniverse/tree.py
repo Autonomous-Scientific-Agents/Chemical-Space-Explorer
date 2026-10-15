@@ -7,10 +7,11 @@ chosen non-cut vertex. Every connected skeleton then appears exactly once.
 import math
 import random
 from dataclasses import dataclass
+from functools import lru_cache
 from itertools import combinations
 
 from .bonds import count_molecules
-from .canon import canonicalize, initial_colors, refine, same_orbit, _nbr_lists
+from .canon import _nbr_lists, canonicalize, initial_colors, invariant_hash, refine, same_orbit
 from .graph import Skeleton, non_cut_vertices
 from .rules import RuleConfig
 
@@ -20,24 +21,40 @@ def roots(elements):
 
 
 def _accept(child, new):
-    """Canonical-deletion test: is `new` in the orbit of the canonical non-cut vertex?"""
-    colors = refine(_nbr_lists(child.adj), initial_colors(child.labels))
-    nc = non_cut_vertices(child.adj)
-    cmin = min(colors[v] for v in nc)
-    if colors[new] != cmin:
+    """Canonical-deletion test: is `new` in the orbit of the canonical non-cut vertex?
+
+    The canonical vertex minimizes (element, degree, refined color), then
+    canonical position. Cheap keys come first so most children are rejected
+    before color refinement or canonical labeling runs.
+    """
+    labels, adj = child.labels, child.adj
+    deg = [bin(a).count("1") for a in adj]
+    key_new = (labels[new], deg[new])
+    # leaves are never cut vertices
+    if any(d == 1 and (labels[v], 1) < key_new for v, d in enumerate(deg)):
         return False, None
-    cands = [v for v in nc if colors[v] == cmin]
+    nc = non_cut_vertices(adj)
+    if min((labels[v], deg[v]) for v in nc) < key_new:
+        return False, None
+    cands = [v for v in nc if (labels[v], deg[v]) == key_new]
     if len(cands) == 1:
         return True, None
-    form, perm = canonicalize(child.labels, child.adj)
+    colors = refine(_nbr_lists(adj), initial_colors(labels))
+    cmin = min(colors[v] for v in cands)
+    if colors[new] != cmin:
+        return False, None
+    cands = [v for v in cands if colors[v] == cmin]
+    if len(cands) == 1:
+        return True, None
+    form, perm = canonicalize(labels, adj)
     m = min(cands, key=perm.__getitem__)
-    return same_orbit(child.labels, child.adj, m, new), form
+    return same_orbit(labels, adj, m, new), form
 
 
 def children(skel, elements, cfg):
     n = skel.n
     spare = [cfg.max_valence(lab) - bin(a).count("1") for lab, a in zip(skel.labels, skel.adj)]
-    out = {}
+    buckets = {}  # invariant hash -> [[child, canonical form or None], ...]
     for e in elements:
         eligible = [v for v in range(n) if spare[v] > 0 and cfg.pair_allowed(e, skel.labels[v])]
         max_size = min(cfg.max_valence(e), len(eligible), 1 if not cfg.allow_rings else n)
@@ -47,10 +64,28 @@ def children(skel, elements, cfg):
                 ok, form = _accept(child, n)
                 if not ok:
                     continue
-                if form is None:
-                    form = canonicalize(child.labels, child.adj)[0]
-                out.setdefault(form, child)
-    return list(out.values())
+                # siblings can be isomorphic; canonicalize only on hash collisions
+                bucket = buckets.setdefault(invariant_hash(child.labels, child.adj), [])
+                if bucket:
+                    if form is None:
+                        form = canonicalize(child.labels, child.adj)[0]
+                    for entry in bucket:
+                        if entry[1] is None:
+                            entry[1] = canonicalize(entry[0].labels, entry[0].adj)[0]
+                    if any(entry[1] == form for entry in bucket):
+                        continue
+                bucket.append([child, form])
+    return [child for bucket in buckets.values() for child, _ in bucket]
+
+
+@lru_cache(maxsize=1 << 16)
+def cached_children(skel, elements, cfg):
+    return tuple(children(skel, elements, cfg))
+
+
+@lru_cache(maxsize=1 << 18)
+def cached_count(skel, cfg):
+    return count_molecules(skel, cfg)
 
 
 @dataclass
@@ -86,7 +121,7 @@ def _summarize(samples, start_level):
     return results
 
 
-def knuth_estimate(start_nodes, start_level, max_atoms, elements, cfg, probes, rng, payload=count_molecules):
+def knuth_estimate(start_nodes, start_level, max_atoms, elements, cfg, probes, rng, payload=cached_count):
     """Knuth's random-probe estimate of per-level payload sums below `start_level`.
 
     Unbiased but heavy-tailed: rare probes with huge weights dominate the mean.
@@ -98,7 +133,7 @@ def knuth_estimate(start_nodes, start_level, max_atoms, elements, cfg, probes, r
         node = rng.choice(start_nodes)
         weight = float(len(start_nodes))
         for d in range(depth):
-            ch = children(node, elements, cfg)
+            ch = cached_children(node, tuple(elements), cfg)
             if not ch:
                 break
             weight *= len(ch)
@@ -116,7 +151,7 @@ def stratum(skel, cfg):
     return tuple(free), len(skel.edges()) - skel.n
 
 
-def stratified_estimate(start_nodes, start_level, max_atoms, elements, cfg, passes, rng, payload=count_molecules):
+def stratified_estimate(start_nodes, start_level, max_atoms, elements, cfg, passes, rng, payload=cached_count):
     """Chen's stratified sampling of the tree; each pass is one unbiased estimate.
 
     Per level, each stratum keeps one representative node whose weight is the
@@ -142,7 +177,7 @@ def stratified_estimate(start_nodes, start_level, max_atoms, elements, cfg, pass
         for _n in range(start_level + 1, max_atoms + 1):
             nxt = {}
             for node, w in level.values():
-                for c in children(node, elements, cfg):
+                for c in cached_children(node, tuple(elements), cfg):
                     merge(nxt, c, w)
             level = nxt
             smp.append((sum(w * payload(c, cfg) for c, w in level.values()), sum(w for _, w in level.values())))
