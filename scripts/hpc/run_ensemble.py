@@ -9,6 +9,7 @@ Without PBS_NODEFILE the launcher runs on this machine only (for testing).
 """
 import argparse
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -20,6 +21,18 @@ from ensemble_launcher.ensemble import Task
 from ensemble_launcher.helper_functions import get_nodes
 
 from chemuniverse import shards
+
+
+PROPAGATE = ("PATH", "VIRTUAL_ENV", "PYTHONPATH", "CHEMUNIVERSE_BACKEND", "OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS",
+             "MKL_NUM_THREADS", "RAYON_NUM_THREADS")
+
+
+def env_flags(flavor):
+    """Pass the venv to processes mpiexec starts: ensemble_launcher runs workers as a bare `python`,
+    and on Crux (PALS) they otherwise get a Python without ensemble_launcher (job 362420)."""
+    if flavor != "cray-pals":
+        return []
+    return [x for k in PROPAGATE if k in os.environ for x in ("--env", f"{k}={os.environ[k]}")]
 
 
 def launcher_config(nnodes, flavor):
@@ -41,7 +54,7 @@ def launcher_config(nnodes, flavor):
         comm_name="async_zmq",
         children_scheduler_policy=children_policy,
         policy_config=policy,
-        mpi_config=MPIConfig(flavor=flavor or "mpich"),
+        mpi_config=MPIConfig(flavor=flavor or "mpich", extra_launcher_flags=env_flags(flavor)),
         master_logs=True,
         worker_logs=True,
     )
