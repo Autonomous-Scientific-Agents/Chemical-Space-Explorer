@@ -39,7 +39,8 @@ export RUSTUP_HOME=$PREFIX/rustup CARGO_HOME=$PREFIX/cargo PATH=$PREFIX/cargo/bi
 [ -x "$CARGO_HOME/bin/cargo" ] || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --no-modify-path
 RUSTFLAGS="-C target-cpu=znver2" uv pip install -q --reinstall ./src/rust
 
-# check: Rust core present, test suite, a short single-node benchmark
+# check: Rust core present, test suite, a short single-node benchmark (one BLAS/OpenMP thread per process)
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 python -c "import chemuniverse.backend as b; assert b.core, 'Rust core not importable'; print('== rust core ok')"
 (cd src && CHEMUNIVERSE_BACKEND=rust python -m pytest -q -x)
 (cd src && python scripts/bench.py --jobs 1 64 128 --exact 8 --export 8)
