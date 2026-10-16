@@ -31,6 +31,10 @@ source "$PREFIX/venv/bin/activate"
 # one thread per worker: Crux defaults to OMP_NUM_THREADS=256, and numpy's OpenBLAS (imported by
 # ensemble_launcher) starts a thread pool in each of the 128 workers -> pthread_create EAGAIN (job 362409)
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 RAYON_NUM_THREADS=1
+# Workers that mpiexec (PALS) starts as a bare `python` resolve to the venv's symlinked interpreter but
+# do not see the venv (job 362421). Point them at its site-packages and at the editable checkout
+# (.pth files are ignored for PYTHONPATH entries); run_ensemble.py forwards PYTHONPATH with --env.
+export PYTHONPATH="$(python -c 'import site; print(":".join(site.getsitepackages()))'):$PREFIX/src${PYTHONPATH:+:$PYTHONPATH}"
 mkdir -p "$RUN_DIR" "$SUMMARY_DIR"
 LOG=$SUMMARY_DIR/run.log
 {
