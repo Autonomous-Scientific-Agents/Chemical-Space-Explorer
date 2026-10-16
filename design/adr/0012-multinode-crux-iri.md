@@ -33,6 +33,15 @@ Every unit of work is independent: exact and export subtrees (thanks to canonica
    - It then runs the tests and a one-node benchmark.
 5. `run_shards.sh` lets only rank 0 drive the ensemble, in case the IRI launcher starts the command once per node. A `probe` job checks this behavior before the first multi-node run.
 
+## Findings from the probe job (362402, 2 nodes, 2026-10-16)
+
+- IRI runs the command **once**, on the first node (no PALS or PMI rank variables), and `PBS_NODEFILE` lists all nodes. So ensemble_launcher must reach the other nodes itself.
+- The environment is bare: `PATH=/bin:/usr/bin`, no modules, **no `mpiexec`**, and system Python 3.6.
+  - The JobSpecs therefore use a login shell (`bash -lc`).
+  - `run_shards.sh` loads `cray-pals` if it's needed, and fails clearly on more than one node without `mpiexec`.
+  - The driver passes `MPIConfig(flavor="cray-pals")` (`mpiexec -n … --ppn …`), because ensemble_launcher's default flavor is `mpich`.
+- Nodes are AMD EPYC 7742 with `nproc=256` (SMT2). `/lus/grand/projects/IQC` exists.
+
 ## Alternatives
 
 - PBS job arrays or mpi4py master-worker. Workable, but the user asked for ensemble_launcher, which already provides hierarchical scheduling, work stealing and fault handling at 2,000+ nodes.

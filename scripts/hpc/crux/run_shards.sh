@@ -16,6 +16,17 @@ RUN_DIR=$1; shift
 SUMMARY_DIR=$RUN_DIR
 if [ "${1:-}" != "--" ] && [ $# -gt 0 ]; then SUMMARY_DIR=$1; shift; fi
 [ "${1:-}" = "--" ] && shift
+# ensemble_launcher starts workers on the other nodes with mpiexec (cray-pals)
+if ! command -v mpiexec >/dev/null; then
+  set +u  # profile and module scripts reference unset variables
+  source /etc/profile >/dev/null 2>&1 || true
+  module load cray-pals >/dev/null 2>&1 || true
+  set -u
+fi
+NNODES=$(wc -l < "${PBS_NODEFILE:-/dev/null}")
+if [ "$NNODES" -gt 1 ] && ! command -v mpiexec >/dev/null; then
+  echo "error: $NNODES nodes but no mpiexec; load cray-pals (module load cray-pals)" >&2; exit 2
+fi
 source "$PREFIX/venv/bin/activate"
 mkdir -p "$RUN_DIR" "$SUMMARY_DIR"
 LOG=$SUMMARY_DIR/run.log
@@ -24,7 +35,7 @@ LOG=$SUMMARY_DIR/run.log
   if [ ! -f "$RUN_DIR/plan.json" ]; then python -m chemuniverse shard plan "$RUN_DIR" "$@"; fi
   cd "$RUN_DIR"   # ensemble_launcher writes logs/ into the working directory
   status=0
-  python "$PREFIX/src/scripts/hpc/run_ensemble.py" "$RUN_DIR" --ncpus 128 || status=$?
+  python "$PREFIX/src/scripts/hpc/run_ensemble.py" "$RUN_DIR" --ncpus 128 --mpi-flavor cray-pals || status=$?
   [ -f "$RUN_DIR/result.json" ] && [ "$SUMMARY_DIR" != "$RUN_DIR" ] && cp "$RUN_DIR/result.json" "$RUN_DIR/plan.json" "$SUMMARY_DIR/"
   [ $status -eq 0 ] && python -m chemuniverse shard reduce "$RUN_DIR"
   echo "== $(date -Is) exit $status"

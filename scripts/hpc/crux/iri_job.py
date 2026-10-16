@@ -8,7 +8,9 @@
     python3 scripts/iri_api_call.py --facility alcf call --operation-id launchJob \
         --path-param resource_id=8b9b42f7-572a-4909-8472-a0453436304c --json-file run.json --ensure-token
 
-Paths are absolute: IRI passes $HOME and $USER literally in JSON fields.
+Paths are absolute: IRI passes $HOME and $USER literally in JSON fields. The command runs
+once, on the first node (PBS_NODEFILE lists all nodes), in a login shell (bash -lc) so the
+Cray PE modules, including mpiexec from cray-pals, are available.
 Outputs: small files in /home/USER/chemuniverse-runs/NAME (readable with the IRI `view`
 operation); large shard data in /lus/grand/projects/PROJ/chemuniverse/NAME.
 """
@@ -29,7 +31,8 @@ def spec(a, name, command):
     return {
         "name": f"chemu-{name}"[:15],
         "executable": "/bin/bash",
-        "arguments": ["-c", f"mkdir -p {out} && {command}"],
+        # login shell: IRI starts the job with PATH=/bin:/usr/bin and no modules (probe, 2026-10-16)
+        "arguments": ["-lc", f"mkdir -p {out} && {command}"],
         "directory": home,
         "stdout_path": f"{out}/job.out",
         "stderr_path": f"{out}/job.err",
