@@ -126,6 +126,11 @@ fn expand_one(node: &Node, depth: usize, elements: &[u32], cfg: &Cfg, keep_last:
 /// Python may fork afterwards); rows are summed, last levels concatenated in node order.
 pub fn expand(nodes: &[Node], depth: usize, elements: &[u32], cfg: &Cfg, keep_last: bool,
               threads: usize) -> (Vec<(u64, u64)>, Vec<Node>) {
+    if threads <= 1 {
+        // shard workers call this once per process; no extra thread needed
+        let parts = nodes.iter().map(|nd| expand_one(nd, depth, elements, cfg, keep_last));
+        return combine(parts, depth);
+    }
     let next = AtomicUsize::new(0);
     let slots: Vec<Mutex<Option<(Vec<(u64, u64)>, Vec<Node>)>>> = nodes.iter().map(|_| Mutex::new(None)).collect();
     std::thread::scope(|scope| {
@@ -139,7 +144,10 @@ pub fn expand(nodes: &[Node], depth: usize, elements: &[u32], cfg: &Cfg, keep_la
             });
         }
     });
-    let parts = slots.into_iter().map(|m| m.into_inner().unwrap().unwrap());
+    combine(slots.into_iter().map(|m| m.into_inner().unwrap().unwrap()), depth)
+}
+
+fn combine(parts: impl Iterator<Item = (Vec<(u64, u64)>, Vec<Node>)>, depth: usize) -> (Vec<(u64, u64)>, Vec<Node>) {
     let mut rows = vec![(0u64, 0u64); depth];
     let mut last = Vec::new();
     for (r, l) in parts {
