@@ -41,6 +41,21 @@ pip install ./rust                                                # builds and i
 - Examples: exact counts up to 8 atoms take 1.5 s instead of 113 s, and 10 sampling passes to 12 atoms take 2.1 s instead of 193 s.
 - Details are in `design/prd/0002-performance.md`.
 
+## Multi-node runs (shards)
+
+Any run can be split into independent shards for a task farm. The reduced result is identical to a single-machine run.
+
+```bash
+python -m chemuniverse shard plan runs/cnof12 --kind exact --max-atoms 12 --elements C N O F --shards 4000
+python -m chemuniverse shard run runs/cnof12 --jobs 10        # locally, or one task per shard on a cluster
+python -m chemuniverse shard reduce runs/cnof12
+```
+
+- `--kind` is `exact`, `export` (SMILES) or `passes` (stratified sampling, with one shard per pass).
+- Finished shards are skipped, so interrupted runs resume.
+- On ALCF Crux, `scripts/hpc/run_ensemble.py` runs the shards with [ensemble_launcher](https://github.com/argonne-lcf/ensemble_launcher).
+- Jobs are submitted through the DOE IRI API with the JobSpecs from `scripts/hpc/crux/iri_job.py`. See ADR 0012.
+
 ## Molecule datasets
 
 Exact enumeration builds every molecule exactly once, so it can write them out as a GDB-style dataset:

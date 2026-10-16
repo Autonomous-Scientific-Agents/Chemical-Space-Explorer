@@ -62,6 +62,10 @@ There is one generation tree, and it is used in two ways:
   - The sampler loops stay in Python, so estimates are bit-identical across backends.
   - It must not leave threads running, because Python forks afterwards.
   - Python functions keep `_py`/`_rust` suffixed variants (`children_py`, `count_molecules_py`, `molecule_smiles_py`).
+- **Shards** (`shards.py`, `python -m chemuniverse shard plan|run|reduce`) are the multi-node layer.
+  - `plan` writes `plan.json` plus a gzip frontier and assignment. Each shard writes its result file atomically; `reduce` must equal the single-machine functions, which `tests/test_shards.py` checks.
+  - Crux: `scripts/hpc/run_ensemble.py` (ensemble_launcher), `scripts/hpc/crux/{setup_env.sh,run_shards.sh,iri_job.py}`.
+  - Submit through IRI with `~/git/genesis-skills/skills/amsc-skills/iri-api/scripts/iri_api_call.py`. The Crux resource ID is `8b9b42f7-572a-4909-8472-a0453436304c`. Crux jobs clone the repo from GitHub, so push before submitting.
 - **Export** (`export.py`) does a depth-first walk of the same tree and writes `molecules(..., with_orders=True)` as Kekulé SMILES (`to_smiles`).
   - It splits into a fixed 128 subtree tasks, so the files are identical for any `jobs`.
   - `tests/test_export.py` parses the SMILES back and checks that every canonical form is unique and that the counts equal the exact counts.
