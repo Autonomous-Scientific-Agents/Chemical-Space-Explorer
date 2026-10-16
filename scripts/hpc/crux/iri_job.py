@@ -83,7 +83,9 @@ def main():
         name = a.name
         run_dir = a.run_dir or f"/lus/grand/projects/{a.project}/chemuniverse/{name}"
         summary = f"/home/{a.user}/chemuniverse-runs/{name}"
-        command = (f"{env} && bash {prefix}/src/scripts/hpc/crux/run_shards.sh {shlex.quote(run_dir)} "
+        # pull scripts and Python code (editable install); changes under rust/ need a new setup job
+        command = (f"{env} && git -C {prefix}/src pull -q --ff-only && "
+                   f"bash {prefix}/src/scripts/hpc/crux/run_shards.sh {shlex.quote(run_dir)} "
                    f"{shlex.quote(summary)} -- {' '.join(shlex.quote(x) for x in plan_args)}")
     json.dump(spec(a, name, command), sys.stdout, indent=2)
     print()
