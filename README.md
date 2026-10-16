@@ -21,7 +21,22 @@ python -m chemuniverse --max-atoms 11 --elements C N O F --exact-up-to 6 --sampl
 total: 6.291e+08 ± 4.2e+07   (95.7 s)
 ```
 
-From Python: `chemuniverse.estimate(max_atoms, elements, RuleConfig(...), k_exact, samples, seed, method)` returns one result per size.
+From Python: `chemuniverse.estimate(max_atoms, elements, RuleConfig(...), k_exact, samples, seed, method, jobs)` returns one result per size.
+
+`--jobs N` runs exact subtrees and sampling passes in N worker processes. The results are identical for any N; on 10 cores this is about 5–6.5× faster.
+
+## Molecule datasets
+
+Exact enumeration builds every molecule exactly once, so it can write them out as a GDB-style dataset:
+
+```bash
+python -m chemuniverse export --max-atoms 9 --elements C N O F --out data/cnof9 --jobs 10
+```
+
+- Output files are `n{size}_part{k}.smi.gz`, with one Kekulé SMILES per line, plus a `manifest.json` that records the elements, the rules and the count per size.
+- Every molecule appears once, so no canonicalization is needed.
+- All rule flags of the main command apply.
+- On 10 cores the export writes about 40,000 molecules per second. C, N, O, F up to 9 atoms (6×10⁶ molecules) takes about 3 minutes; up to 10 atoms takes about 30 minutes. Compressed, the files take about 3 bytes per molecule: about 3 MB up to 8 atoms and about 200 MB up to 10.
 
 ## Web explorer
 
@@ -40,6 +55,13 @@ python scripts/build_site_data.py --max-atoms 12 --samples 8 --jobs 10
 ```
 
 All halogens obey the same rules, so the 128 possible element choices reduce to 40 runs. Each run is cached in `build/site/`, so an interrupted build resumes.
+
+## Design records
+
+`design/` holds the reasons behind the code:
+- decision records (ADRs), one per decision, in `design/adr/`;
+- feature requirements (PRDs) in `design/prd/`;
+- an index in `design/README.md`.
 
 ## Agent traces
 

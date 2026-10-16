@@ -21,8 +21,14 @@ pip install -e ".[test]"              # no runtime deps; pytest for tests
 pytest                                # all tests
 pytest tests/test_counts.py::test_alkanes   # single test
 ruff check --line-length 120 .
-python -m chemuniverse --max-atoms 12 --elements C N O F --exact-up-to 6 --samples 10 --seed 0   # --method knuth for probes
+python -m chemuniverse --max-atoms 12 --elements C N O F --exact-up-to 6 --samples 10 --seed 0 --jobs 10   # --method knuth for probes
+python -m chemuniverse export --max-atoms 8 --elements C N O F --out DIR --jobs 10   # SMILES dataset
+python scripts/bench.py --jobs 1 10                      # performance numbers for design/prd/0002
 ```
+
+## Design records
+
+Decisions live in `design/adr/` and features in `design/prd/`, with an index in `design/README.md`. Whenever a significant decision is made (method, rules, dependencies, publishing, performance), add an ADR, or supersede an old one by adding a new ADR and updating the old one's status line, in the same change.
 
 ## Architecture (package `chemuniverse/`)
 
@@ -44,6 +50,12 @@ There is one generation tree, and it is used in two ways:
   - Enumerate bond orders 1–3 per edge by backtracking, then apply the full rules (`rules.py`).
   - Each molecule is keyed by the canonical form of the skeleton labeled with `(element, H count)`, so Kekulé/resonance structures collapse into one molecule.
 - **Exact mode** is a breadth-first traversal of the tree up to `k_exact`, which defaults to 6.
+- **Parallelism** (`jobs`, through `tree._pmap` with a `fork` context): exact subtrees and sampling passes or probe batches run in worker processes.
+  - Every pass or probe gets its own seed drawn from the caller's RNG, so results never depend on `jobs`.
+  - Keep that property, because `tests/test_parallel.py` checks it.
+- **Export** (`export.py`) does a depth-first walk of the same tree and writes `molecules(..., with_orders=True)` as Kekulé SMILES (`to_smiles`).
+  - It splits into a fixed 128 subtree tasks, so the files are identical for any `jobs`.
+  - `tests/test_export.py` parses the SMILES back and checks that every canonical form is unique and that the counts equal the exact counts.
 - **Estimate mode** covers levels deeper than `k_exact`. `estimate(..., method=)` chooses the sampler.
   - `stratified_estimate` (the default) is Chen's stratified sampling. Per level, it keeps one weighted representative per `stratum()`, where a stratum is (atoms per free-valence count, ring count).
   - `knuth_estimate` uses random probes. It is heavy-tailed, so its error bars are unreliable.

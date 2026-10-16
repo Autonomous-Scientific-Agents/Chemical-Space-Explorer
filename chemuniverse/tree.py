@@ -5,7 +5,9 @@ the child only if the new atom is in the orbit of the child's canonically
 chosen non-cut vertex. Every connected skeleton then appears exactly once.
 """
 import math
+import multiprocessing
 import random
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from functools import lru_cache
 from itertools import combinations
@@ -97,12 +99,50 @@ class LevelResult:
     skeletons: float = 0.0
 
 
-def enumerate_exact(max_atoms, elements, cfg, payload=count_molecules):
-    """Breadth-first traversal; returns (results per level, nodes of the last level)."""
+def _pmap(fn, tasks, jobs):
+    """map(fn, tasks) in order, in `jobs` worker processes when jobs > 1."""
+    if jobs <= 1 or len(tasks) <= 1:
+        return [fn(*t) for t in tasks]
+    # fork (where available) starts faster and, unlike spawn, works from notebooks and stdin scripts
+    ctx = multiprocessing.get_context("fork" if "fork" in multiprocessing.get_all_start_methods() else None)
+    with ProcessPoolExecutor(min(jobs, len(tasks)), mp_context=ctx) as pool:
+        return list(pool.map(fn, *zip(*tasks)))
+
+
+def _chunks(items, k):
+    """Split `items` into at most k contiguous, nearly equal chunks."""
+    size = -(-len(items) // k)
+    return [items[i:i + size] for i in range(0, len(items), size)]
+
+
+def _expand(nodes, depth, elements, cfg, payload):
+    """Breadth-first expansion of `nodes` by `depth` levels; per-level (payload, skeletons) and last level."""
+    rows = []
+    for _ in range(depth):
+        nodes = [c for s in nodes for c in children(s, elements, cfg)]
+        rows.append((sum(payload(s, cfg) for s in nodes), len(nodes)))
+    return rows, nodes
+
+
+def enumerate_exact(max_atoms, elements, cfg, payload=count_molecules, jobs=1):
+    """Breadth-first traversal; returns (results per level, nodes of the last level).
+
+    With jobs > 1 the tree is grown serially until it is wide enough, then the
+    subtrees are expanded in worker processes. Canonical augmentation makes the
+    subtrees disjoint, so their counts simply add up; level order is unchanged.
+    """
     level = roots(elements)
     results = []
     for n in range(1, max_atoms + 1):
         if n > 1:
+            if jobs > 1 and len(level) >= 16 * jobs:
+                tasks = [(c, max_atoms - n + 1, elements, cfg, payload) for c in _chunks(level, 4 * jobs)]
+                parts = _pmap(_expand, tasks, jobs)
+                level = [s for _, nodes in parts for s in nodes]
+                for d in range(max_atoms - n + 1):
+                    results.append(LevelResult(n + d, sum(p[0][d][0] for p in parts),
+                                               skeletons=sum(p[0][d][1] for p in parts)))
+                return results, level
             level = [c for s in level for c in children(s, elements, cfg)]
         results.append(LevelResult(n, sum(payload(s, cfg) for s in level), skeletons=len(level)))
     return results, level
@@ -121,14 +161,10 @@ def _summarize(samples, start_level):
     return results
 
 
-def knuth_estimate(start_nodes, start_level, max_atoms, elements, cfg, probes, rng, payload=cached_count):
-    """Knuth's random-probe estimate of per-level payload sums below `start_level`.
-
-    Unbiased but heavy-tailed: rare probes with huge weights dominate the mean.
-    """
-    depth = max_atoms - start_level
+def _knuth_probes(seeds, start_nodes, depth, elements, cfg, payload):
     samples = []
-    for _ in range(probes):
+    for seed in seeds:
+        rng = random.Random(seed)
         smp = [(0.0, 0.0)] * depth
         node = rng.choice(start_nodes)
         weight = float(len(start_nodes))
@@ -140,6 +176,18 @@ def knuth_estimate(start_nodes, start_level, max_atoms, elements, cfg, probes, r
             node = rng.choice(ch)
             smp[d] = (weight * payload(node, cfg), weight)
         samples.append(smp)
+    return samples
+
+
+def knuth_estimate(start_nodes, start_level, max_atoms, elements, cfg, probes, rng, payload=cached_count, jobs=1):
+    """Knuth's random-probe estimate of per-level payload sums below `start_level`.
+
+    Unbiased but heavy-tailed: rare probes with huge weights dominate the mean.
+    Each probe gets its own seed drawn from `rng`, so results do not depend on `jobs`.
+    """
+    seeds = [rng.getrandbits(64) for _ in range(probes)]
+    tasks = [(c, start_nodes, max_atoms - start_level, elements, cfg, payload) for c in _chunks(seeds, 4 * jobs)]
+    samples = [smp for part in _pmap(_knuth_probes, tasks, jobs) for smp in part]
     return _summarize(samples, start_level)
 
 
@@ -151,13 +199,15 @@ def stratum(skel, cfg):
     return tuple(free), len(skel.edges()) - skel.n
 
 
-def stratified_estimate(start_nodes, start_level, max_atoms, elements, cfg, passes, rng, payload=cached_count):
-    """Chen's stratified sampling of the tree; each pass is one unbiased estimate.
+def _stratified_pass(seed, start_nodes, start_level, max_atoms, elements, cfg, payload):
+    """One pass of Chen's stratified sampling; per level (payload estimate, skeleton estimate).
 
     Per level, each stratum keeps one representative node whose weight is the
     total weight of all nodes merged into it (replaced with probability
     w / total, which keeps the estimate unbiased).
     """
+    rng = random.Random(seed)
+
     def merge(level, node, w):
         key = stratum(node, cfg)
         slot = level.get(key)
@@ -168,36 +218,45 @@ def stratified_estimate(start_nodes, start_level, max_atoms, elements, cfg, pass
             if rng.random() < w / slot[1]:
                 slot[0] = node
 
-    samples = []
-    for _ in range(passes):
-        level = {}
-        for node in start_nodes:
-            merge(level, node, 1.0)
-        smp = []
-        for _n in range(start_level + 1, max_atoms + 1):
-            nxt = {}
-            for node, w in level.values():
-                for c in cached_children(node, tuple(elements), cfg):
-                    merge(nxt, c, w)
-            level = nxt
-            smp.append((sum(w * payload(c, cfg) for c, w in level.values()), sum(w for _, w in level.values())))
-        samples.append(smp)
-    return _summarize(samples, start_level)
+    level = {}
+    for node in start_nodes:
+        merge(level, node, 1.0)
+    smp = []
+    for _n in range(start_level + 1, max_atoms + 1):
+        nxt = {}
+        for node, w in level.values():
+            for c in cached_children(node, tuple(elements), cfg):
+                merge(nxt, c, w)
+        level = nxt
+        smp.append((sum(w * payload(c, cfg) for c, w in level.values()), sum(w for _, w in level.values())))
+    return smp
+
+
+def stratified_estimate(start_nodes, start_level, max_atoms, elements, cfg, passes, rng, payload=cached_count,
+                        jobs=1):
+    """Chen's stratified sampling of the tree; each pass is one unbiased estimate.
+
+    Each pass gets its own seed drawn from `rng`, so results do not depend on `jobs`.
+    """
+    tasks = [(rng.getrandbits(64), start_nodes, start_level, max_atoms, elements, cfg, payload)
+             for _ in range(passes)]
+    return _summarize(_pmap(_stratified_pass, tasks, jobs), start_level)
 
 
 METHODS = {"stratified": (stratified_estimate, 10), "knuth": (knuth_estimate, 1000)}
 
 
-def estimate(max_atoms, elements, cfg=None, k_exact=6, samples=None, seed=0, method="stratified"):
+def estimate(max_atoms, elements, cfg=None, k_exact=6, samples=None, seed=0, method="stratified", jobs=1):
     """Exact counts up to `k_exact` heavy atoms, sampled estimates beyond.
 
     samples: stratified passes or Knuth probes (default 10 or 1000).
+    jobs: worker processes; results are identical for any value.
     """
     cfg = cfg or RuleConfig()
     elements = list(dict.fromkeys(elements))
     sampler, default = METHODS[method]
     k = min(k_exact, max_atoms)
-    results, frontier = enumerate_exact(k, elements, cfg)
+    results, frontier = enumerate_exact(k, elements, cfg, jobs=jobs)
     if max_atoms > k and frontier:
-        results += sampler(frontier, k, max_atoms, elements, cfg, samples or default, random.Random(seed))
+        results += sampler(frontier, k, max_atoms, elements, cfg, samples or default, random.Random(seed), jobs=jobs)
     return results

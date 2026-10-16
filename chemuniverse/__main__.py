@@ -1,20 +1,14 @@
 import argparse
+import sys
 import time
 
 from .rules import RuleConfig
 from .tree import estimate
 
 
-def main(argv=None):
-    p = argparse.ArgumentParser(prog="chemuniverse", description="Estimate the number of stable molecules.")
-    p.add_argument("--max-atoms", type=int, required=True, help="maximum number of heavy atoms")
+def add_rule_args(p):
     p.add_argument("--elements", nargs="+", default=["C", "N", "O", "F"])
-    p.add_argument("--exact-up-to", type=int, default=6, help="enumerate exactly up to this size")
-    p.add_argument("--method", choices=["stratified", "knuth"], default="stratified",
-                   help="sampler for sizes above --exact-up-to")
-    p.add_argument("--samples", type=int, default=None,
-                   help="independent samples: stratified passes (default 10) or Knuth probes (default 1000)")
-    p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--jobs", type=int, default=1, help="worker processes (results do not depend on it)")
     p.add_argument("--hypervalent", action="store_true", help="allow S(IV/VI) and P(V)")
     p.add_argument("--allow-n-o", action="store_true", help="allow N-O bonds")
     p.add_argument("--no-bond-order-limits", action="store_true")
@@ -22,8 +16,10 @@ def main(argv=None):
     p.add_argument("--no-heteroatom", action="store_true")
     p.add_argument("--no-rings", action="store_true")
     p.add_argument("--no-multiple-bonds", action="store_true")
-    a = p.parse_args(argv)
-    cfg = RuleConfig(
+
+
+def rule_config(a):
+    return RuleConfig(
         hypervalent=a.hypervalent,
         bond_order_limits=not a.no_bond_order_limits,
         strain=not a.no_strain,
@@ -32,8 +28,39 @@ def main(argv=None):
         allow_rings=not a.no_rings,
         allow_multiple_bonds=not a.no_multiple_bonds,
     )
+
+
+def export_main(argv):
+    from .export import export
+
+    p = argparse.ArgumentParser(prog="chemuniverse export",
+                                description="Write every molecule up to --max-atoms as gzipped SMILES files.")
+    p.add_argument("--max-atoms", type=int, required=True, help="maximum number of heavy atoms")
+    p.add_argument("--out", required=True, help="output directory (must not contain .smi.gz files)")
+    add_rule_args(p)
+    a = p.parse_args(argv)
+    counts = export(a.max_atoms, a.elements, rule_config(a), a.out, a.jobs)
+    print(f"total: {sum(counts)} molecules written to {a.out}")
+
+
+def main(argv=None):
+    argv = sys.argv[1:] if argv is None else argv
+    if argv[:1] == ["export"]:
+        return export_main(argv[1:])
+    p = argparse.ArgumentParser(prog="chemuniverse", description="Estimate the number of stable molecules.",
+                                epilog="Use 'chemuniverse export --help' to write the molecules as SMILES.")
+    p.add_argument("--max-atoms", type=int, required=True, help="maximum number of heavy atoms")
+    p.add_argument("--exact-up-to", type=int, default=6, help="enumerate exactly up to this size")
+    p.add_argument("--method", choices=["stratified", "knuth"], default="stratified",
+                   help="sampler for sizes above --exact-up-to")
+    p.add_argument("--samples", type=int, default=None,
+                   help="independent samples: stratified passes (default 10) or Knuth probes (default 1000)")
+    p.add_argument("--seed", type=int, default=0)
+    add_rule_args(p)
+    a = p.parse_args(argv)
+    cfg = rule_config(a)
     t0 = time.time()
-    results = estimate(a.max_atoms, a.elements, cfg, a.exact_up_to, a.samples, a.seed, a.method)
+    results = estimate(a.max_atoms, a.elements, cfg, a.exact_up_to, a.samples, a.seed, a.method, a.jobs)
     print(f"elements: {' '.join(a.elements)}   max heavy atoms: {a.max_atoms}")
     print(f"{'n':>3} {'molecules':>12} {'± SE':>10} {'mode':>8} {'cumulative':>12}")
     total = total_var = 0.0

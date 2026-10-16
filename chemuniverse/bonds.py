@@ -3,11 +3,13 @@ from .canon import canonical_form, refined_colors
 from .rules import RingInfo, edge_cap, molecule_ok, skeleton_ok
 
 
-def molecules(skel, cfg):
+def molecules(skel, cfg, with_orders=False):
     """Yield the distinct (element, H) labelings of `skel` that pass all rules.
 
     Bond assignments that give the same hydrogen counts (Kekule/resonance
     structures) are one molecule; it counts if any of its assignments passes.
+    With `with_orders`, yield (key, orders, h) instead of key, where `orders`
+    is one passing assignment {(u, v): order} and `h` the hydrogen counts.
     """
     if not skeleton_ok(cfg, skel):
         return
@@ -19,7 +21,7 @@ def molecules(skel, cfg):
     spare = [cfg.max_valence(labels[v]) - deg[v] for v in range(n)]
     caps = [edge_cap(cfg, skel, rings, u, v) for u, v in edges]
     valences = [cfg.valences(lab) for lab in labels]
-    accepted = set()
+    accepted = {}  # hydrogen counts -> first passing bond orders
     extra = [0] * len(edges)  # bond order minus one, per edge
 
     def finish():
@@ -32,7 +34,7 @@ def molecules(skel, cfg):
             return
         orders = {e: x + 1 for e, x in zip(edges, extra)}
         if molecule_ok(cfg, skel, rings, orders, h):
-            accepted.add(h)
+            accepted[h] = orders
 
     def assign(i):
         if i == len(edges):
@@ -51,15 +53,16 @@ def molecules(skel, cfg):
     assign(0)
     if len(set(refined_colors(labels, skel.adj))) == n:
         # no symmetry: every hydrogen pattern is a distinct molecule
-        for h in accepted:
-            yield tuple(zip(labels, h))
+        for h, orders in accepted.items():
+            key = tuple(zip(labels, h))
+            yield (key, orders, h) if with_orders else key
         return
     seen = set()
-    for h in accepted:
+    for h, orders in accepted.items():
         form = canonical_form(list(zip(labels, h)), skel.adj)
         if form not in seen:
             seen.add(form)
-            yield form
+            yield (form, orders, h) if with_orders else form
 
 
 def count_molecules(skel, cfg):
