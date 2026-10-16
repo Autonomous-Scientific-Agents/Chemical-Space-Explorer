@@ -142,7 +142,7 @@ Each group can be turned off from the command line.
 - hand counts for small molecules and for each rule;
 - the estimator against exact counts.
 
-With C, N, O, F up to 11 atoms there are exactly 698,103,… molecules (6.98×10⁸). This is about 27× GDB-11 (2.6×10⁷), which uses much stricter functional-group and ring filters.
+With C, N, O, F up to 11 atoms there are exactly 698,073,917 molecules (6.98×10⁸; 8,303,267,373 up to 12 atoms). This is about 27× GDB-11 (2.6×10⁷), which uses much stricter functional-group and ring filters.
 
 Exact C, N, O, F counts per size, computed on ALCF Crux (sizes 10–12 for the first time; 12 atoms took 86 core-hours on 4 nodes):
 
