@@ -69,6 +69,9 @@ def shard_main(argv):
     pl.add_argument("--kind", choices=shards.KINDS, required=True)
     pl.add_argument("--max-atoms", type=int, required=True)
     pl.add_argument("--shards", type=int, default=1000, help="exact/export: number of subtree shards")
+    pl.add_argument("--split-level", type=int, default=None, help="exact/export: split the tree at this size")
+    pl.add_argument("--nodes-per-shard", type=int, default=16,
+                    help="exact/export: without --split-level, split at the first level with this many nodes per shard")
     pl.add_argument("--exact-up-to", type=int, default=6, help="passes: exact frontier level")
     pl.add_argument("--passes", type=int, default=10, help="passes: number of stratified passes (= shards)")
     pl.add_argument("--seed", type=int, default=0)
@@ -83,7 +86,7 @@ def shard_main(argv):
     t0 = time.time()
     if a.cmd == "plan":
         shards.plan(a.run_dir, a.kind, a.max_atoms, a.elements, rule_config(a), a.shards, a.exact_up_to, a.passes,
-                    a.seed)
+                    a.seed, split_level=a.split_level, nodes_per_shard=a.nodes_per_shard)
     elif a.cmd == "run":
         from .tree import _pmap
 

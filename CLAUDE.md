@@ -96,4 +96,7 @@ There is one generation tree, and it is used in two ways:
 - Benzene counts once.
 - For n ≤ 6, both samplers must fall within 4 SE of the exact count.
 - A C,N,O,F run up to 11 atoms gives ≈6×10⁸, about 25× GDB-11 (2.6×10⁷).
+- Exact C,N,O,F counts computed on Crux (ADR 0012):
+  - n = 7–12: 67,403; 583,112; 5,526,145; 56,997,371; 634,889,614; 7,605,193,456.
+  - Use them to check samplers. ADR 0013 notes that small-pass stratified estimates tend to come out a few percent low.
 - `tests/test_counts.py::test_tree_matches_brute_force` checks the canonical augmentation against brute-force enumeration.

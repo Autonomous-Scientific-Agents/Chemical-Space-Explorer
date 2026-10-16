@@ -23,6 +23,7 @@ To add a record, copy the structure of an existing one and use the next number. 
 | [0010](adr/0010-rust-core-design.md) | Rust core: exact port, sampling loops in Python, scoped threads, mimalloc | accepted |
 | [0011](adr/0011-site-data-to-17-atoms.md) | Explorer data computed to 17 atoms | accepted |
 | [0012](adr/0012-multinode-crux-iri.md) | Multi-node on Crux: shards + ensemble_launcher + IRI | accepted (in progress) |
+| [0013](adr/0013-stratified-error-bars.md) | Small-pass stratified error bars are optimistic; use hundreds of passes | accepted |
 
 ## Features
 

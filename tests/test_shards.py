@@ -14,7 +14,7 @@ def run_all(run_dir):
 
 
 def test_exact_shards_match_enumeration(tmp_path):
-    shards.plan(tmp_path, "exact", 6, EL, shards=50, log=lambda *_: None)
+    shards.plan(tmp_path, "exact", 6, EL, shards=50, nodes_per_shard=4, log=lambda *_: None)
     run_all(tmp_path)
     results, stats = shards.reduce(tmp_path)
     assert results == enumerate_exact(6, EL, RuleConfig())[0]

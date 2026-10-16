@@ -44,8 +44,14 @@ def result_path(run_dir, i):
 
 
 def plan(run_dir, kind, max_atoms, elements, cfg=None, shards=1000, k_exact=6, passes=10, seed=0, jobs=1,
-         log=print):
-    """Write run_dir/plan.json and run_dir/frontier.json.gz; returns the plan."""
+         log=print, split_level=None, nodes_per_shard=16):
+    """Write run_dir/plan.json and run_dir/frontier.json.gz; returns the plan.
+
+    exact/export split at `split_level`, or else at the first level with at least
+    nodes_per_shard * shards nodes. A deeper split makes the largest single subtree, which
+    bounds the run time, smaller: on Crux CNOF<=12 split at level 7 with ~4 nodes per shard
+    had one 735 s shard in a 761 s run (job 362424).
+    """
     if kind not in KINDS:
         raise ValueError(f"kind must be one of {KINDS}")
     cfg = cfg or RuleConfig()
@@ -62,7 +68,8 @@ def plan(run_dir, kind, max_atoms, elements, cfg=None, shards=1000, k_exact=6, p
         if n > 1:
             level = [c for s in level for c in children(s, elements, cfg)]
         rows.append((sum(count_molecules(s, cfg) for s in level), len(level)))
-        if kind != "passes" and (n == max_atoms or len(level) >= 4 * shards):
+        if kind != "passes" and (n == max_atoms or n == split_level
+                                 or (split_level is None and len(level) >= nodes_per_shard * shards)):
             split = n
         if n == split:
             break
