@@ -10,6 +10,7 @@ import time
 from dataclasses import asdict
 from pathlib import Path
 
+from .backend import cfg_tuple, core
 from .bonds import molecules
 from .graph import bits
 from .tree import _chunks, _pmap, children, roots
@@ -81,8 +82,15 @@ def to_smiles(labels, adj, orders, h):
     return emit(0)
 
 
-def molecule_smiles(skel, cfg):
+def molecule_smiles_py(skel, cfg):
     return [to_smiles(skel.labels, skel.adj, orders, h) for _, orders, h in molecules(skel, cfg, with_orders=True)]
+
+
+def molecule_smiles_rust(skel, cfg):
+    return core.molecule_smiles(skel.labels, skel.adj, cfg_tuple(cfg))
+
+
+molecule_smiles = molecule_smiles_rust if core else molecule_smiles_py
 
 
 def _export_subtrees(part, nodes, start, max_atoms, elements, cfg, out):

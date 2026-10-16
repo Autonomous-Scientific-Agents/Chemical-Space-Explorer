@@ -23,7 +23,23 @@ total: 6.291e+08 ± 4.2e+07   (95.7 s)
 
 From Python: `chemuniverse.estimate(max_atoms, elements, RuleConfig(...), k_exact, samples, seed, method, jobs)` returns one result per size.
 
-`--jobs N` runs exact subtrees and sampling passes in N worker processes. The results are identical for any N; on 10 cores this is about 5–6.5× faster.
+`--jobs N` runs exact subtrees and sampling passes in N worker processes, or N threads with the Rust core. The results are identical for any N.
+
+## Optional Rust core
+
+`rust/` is a Rust port of the hot paths: tree, canonical labeling, payload and SMILES. It produces exactly the same tree, counts, SMILES and estimates as the Python code.
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh   # once, if Rust is not installed
+pip install ./rust                                                # builds and installs chemuniverse-core
+```
+
+- With the core installed it is used automatically. `CHEMUNIVERSE_BACKEND=python` forces the pure-Python code.
+- Speed on a 10-core Mac (C, N, O, F), relative to pure Python on one core:
+  - 15–23× faster on one core;
+  - 75–107× faster with `--jobs 10`.
+- Examples: exact counts up to 8 atoms take 1.5 s instead of 113 s, and 10 sampling passes to 12 atoms take 2.1 s instead of 193 s.
+- Details are in `design/prd/0002-performance.md`.
 
 ## Molecule datasets
 
@@ -36,7 +52,7 @@ python -m chemuniverse export --max-atoms 9 --elements C N O F --out data/cnof9 
 - Output files are `n{size}_part{k}.smi.gz`, with one Kekulé SMILES per line, plus a `manifest.json` that records the elements, the rules and the count per size.
 - Every molecule appears once, so no canonicalization is needed.
 - All rule flags of the main command apply.
-- On 10 cores the export writes about 40,000 molecules per second. C, N, O, F up to 9 atoms (6×10⁶ molecules) takes about 3 minutes; up to 10 atoms takes about 30 minutes. Compressed, the files take about 3 bytes per molecule: about 3 MB up to 8 atoms and about 200 MB up to 10.
+- On 10 cores the export writes about 40,000 molecules per second in pure Python, or about 500,000 with the Rust core. C, N, O, F up to 9 atoms (6×10⁶ molecules) takes about 3 minutes; up to 10 atoms takes about 30 minutes. Compressed, the files take about 3 bytes per molecule: about 3 MB up to 8 atoms and about 200 MB up to 10.
 
 ## Web explorer
 

@@ -19,11 +19,12 @@ To add a record, copy the structure of an existing one and use the next number. 
 | [0006](adr/0006-stratified-sampling.md) | Hybrid exact + stratified sampling (Knuth demoted) | accepted |
 | [0007](adr/0007-static-explorer-github-pages.md) | Static explorer on GitHub Pages | accepted |
 | [0008](adr/0008-agent-traces.md) | Sanitized agent-trace replays, HTML-only publishing | accepted |
-| [0009](adr/0009-performance-strategy.md) | Processes + Rust core; no GPU, no threads | accepted |
+| [0009](adr/0009-performance-strategy.md) | Processes + Rust core; no GPU, no threads | accepted, refined by 0010 |
+| [0010](adr/0010-rust-core-design.md) | Rust core: exact port, sampling loops in Python, scoped threads, mimalloc | accepted |
 
 ## Features
 
 | # | Feature | Status |
 |---|---|---|
 | [0001](prd/0001-molecule-dataset-export.md) | Molecule dataset export (SMILES) | implemented |
-| [0002](prd/0002-performance.md) | Performance | stage 1 done, Rust core next |
+| [0002](prd/0002-performance.md) | Performance | stages 1 and 2 done |

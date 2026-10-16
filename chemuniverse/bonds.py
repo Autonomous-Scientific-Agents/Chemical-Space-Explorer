@@ -1,4 +1,5 @@
 """Count distinct stable molecules on one skeleton (the tree-node payload)."""
+from .backend import cfg_tuple, core
 from .canon import canonical_form, refined_colors
 from .rules import RingInfo, edge_cap, molecule_ok, skeleton_ok
 
@@ -65,5 +66,12 @@ def molecules(skel, cfg, with_orders=False):
             yield (form, orders, h) if with_orders else form
 
 
-def count_molecules(skel, cfg):
+def count_molecules_py(skel, cfg):
     return sum(1 for _ in molecules(skel, cfg))
+
+
+def count_molecules_rust(skel, cfg):
+    return core.count_molecules(skel.labels, skel.adj, cfg_tuple(cfg))
+
+
+count_molecules = count_molecules_rust if core else count_molecules_py

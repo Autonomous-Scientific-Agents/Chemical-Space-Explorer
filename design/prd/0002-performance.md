@@ -1,6 +1,6 @@
 # PRD 0002: Performance
 
-- Status: in progress (stage 1 done 2026-10-16; stage 2, the Rust core, not started)
+- Status: stages 1 and 2 done 2026-10-16; further single-core optimization of the Rust core is optional
 - Date: 2026-10-16
 - Decisions: ADR 0009
 
@@ -22,7 +22,7 @@ Pure Python runs at about 130 µs per molecule. Exact enumeration stops at about
 ## Requirements
 
 - For a fixed seed, results are bit-identical across `jobs` values and across backends.
-- `CHEMUNIVERSE_BACKEND=auto|python|rust`.
+- `CHEMUNIVERSE_BACKEND=auto|python|rust`. The Rust core installs separately with `pip install ./rust`. It is not a pip extra, because it isn't on PyPI.
 - `scripts/bench.py` reports molecules per second and seconds per pass, by backend and by jobs.
 
 ## Success metrics
@@ -45,3 +45,21 @@ Stage 1 gives 5–6.5×, short of the hoped-for 8–10×:
 - Serial passes share `cached_children`/`cached_count` across passes; separate processes don't, so a pass costs 32 s per core in a worker against 19 s in a serial run.
 - Process start-up and the serial top of the tree add a fixed cost.
 - Sending last-level nodes back to the parent costs almost nothing, and finer chunks gained about 10%, within noise.
+
+### Stage 2: Rust core (ADR 0010)
+
+Measured with `scripts/bench.py --jobs 1 10 --exact 8 --export 8`, with caches cleared before each task. Speedups are relative to Python on 1 core:
+
+| Task (CNOF) | Python, 1 core | Python, 10 jobs | Rust, 1 core | Rust, 10 jobs |
+|---|---|---|---|---|
+| exact ≤ 8 (6.6×10⁵ molecules) | 112.7 s | 19.5 s | 4.8 s (23×) | 1.5 s (75×) |
+| 10 stratified passes 6→12 | 192.6 s | 35.3 s | 13.0 s (15×) | 2.1 s (92×) |
+| export ≤ 8 | 128.3 s | 18.8 s | 8.1 s (16×) | 1.2 s (107×) |
+
+- The single-core gain (15–23×) is below the 30–100× estimate. The port keeps Python's data layout so that results stay identical: sorted `Vec` signatures in `refine` and `Vec`-keyed hash sets.
+- In stratified sampling and export, the loops and the per-node calls across the language boundary still run in Python.
+- Raw Rust `expand` (exact, no conversion back to Python) takes 4.1 s on 1 thread and 0.55 s on 10 threads for levels 6–8.
+- **Next steps, if needed:**
+  - Remove allocations from `refine` and `canonicalize`.
+  - Move the export depth-first walk into Rust.
+  - Port the sampling loops together with a bit-compatible Mersenne Twister.

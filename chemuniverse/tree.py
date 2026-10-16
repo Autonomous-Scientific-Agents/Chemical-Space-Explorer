@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from itertools import combinations
 
+from .backend import cfg_tuple, core
 from .bonds import count_molecules
 from .canon import _nbr_lists, canonicalize, initial_colors, invariant_hash, refine, same_orbit
 from .graph import Skeleton, non_cut_vertices
@@ -53,7 +54,7 @@ def _accept(child, new):
     return same_orbit(labels, adj, m, new), form
 
 
-def children(skel, elements, cfg):
+def children_py(skel, elements, cfg):
     n = skel.n
     spare = [cfg.max_valence(lab) - bin(a).count("1") for lab, a in zip(skel.labels, skel.adj)]
     buckets = {}  # invariant hash -> [[child, canonical form or None], ...]
@@ -78,6 +79,13 @@ def children(skel, elements, cfg):
                         continue
                 bucket.append([child, form])
     return [child for bucket in buckets.values() for child, _ in bucket]
+
+
+def children_rust(skel, elements, cfg):
+    return [Skeleton(tuple(lab), tuple(adj)) for lab, adj in core.children(skel.labels, skel.adj, elements, cfg_tuple(cfg))]
+
+
+children = children_rust if core else children_py
 
 
 @lru_cache(maxsize=1 << 16)
@@ -135,6 +143,12 @@ def enumerate_exact(max_atoms, elements, cfg, payload=count_molecules, jobs=1):
     results = []
     for n in range(1, max_atoms + 1):
         if n > 1:
+            if core and payload is count_molecules and len(level) >= 16 * jobs:
+                # Rust expands the subtrees on `jobs` threads with the GIL released
+                rows, nodes = core.expand(level, max_atoms - n + 1, elements, cfg_tuple(cfg), True, jobs)
+                level = [Skeleton(tuple(lab), tuple(adj)) for lab, adj in nodes]
+                results += [LevelResult(n + d, mols, skeletons=sk) for d, (mols, sk) in enumerate(rows)]
+                return results, level
             if jobs > 1 and len(level) >= 16 * jobs:
                 tasks = [(c, max_atoms - n + 1, elements, cfg, payload) for c in _chunks(level, 4 * jobs)]
                 parts = _pmap(_expand, tasks, jobs)

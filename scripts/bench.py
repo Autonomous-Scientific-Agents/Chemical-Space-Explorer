@@ -1,6 +1,7 @@
 """Benchmark exact enumeration, stratified sampling and export (see design/prd/0002-performance.md).
 
     python scripts/bench.py --jobs 1 10
+    CHEMUNIVERSE_BACKEND=python python scripts/bench.py --jobs 1 10
 """
 import argparse
 import random
@@ -13,13 +14,17 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from chemuniverse import RuleConfig  # noqa: E402
+from chemuniverse.backend import core  # noqa: E402
 from chemuniverse.export import export  # noqa: E402
-from chemuniverse.tree import enumerate_exact, stratified_estimate  # noqa: E402
+from chemuniverse.tree import cached_children, cached_count, enumerate_exact, stratified_estimate  # noqa: E402
 
 EL = ["C", "N", "O", "F"]
 
 
 def timed(fn):
+    # cold caches, so forked workers do not inherit results from an earlier run
+    cached_children.cache_clear()
+    cached_count.cache_clear()
     t0 = time.perf_counter()
     out = fn()
     return out, time.perf_counter() - t0
@@ -35,6 +40,7 @@ def main():
     a = p.parse_args()
     cfg = RuleConfig()
     _, frontier = enumerate_exact(6, EL, cfg)
+    print(f"backend: {'rust' if core else 'python'}   (set CHEMUNIVERSE_BACKEND=python|rust)")
     print(f"{'jobs':>4} {'task':<34} {'seconds':>8} {'molecules/s':>12}")
     for jobs in a.jobs:
         res, t = timed(lambda: enumerate_exact(a.exact, EL, cfg, jobs=jobs)[0])

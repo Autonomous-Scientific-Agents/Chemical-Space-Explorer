@@ -1,6 +1,6 @@
 # ADR 0009: Performance strategy of process parallelism plus an optional Rust core; no GPU, no Python threads
 
-- Status: accepted
+- Status: accepted. Implementation details are refined by ADR 0010 (scoped threads instead of rayon, mimalloc).
 - Date: 2026-10-16
 
 ## Context

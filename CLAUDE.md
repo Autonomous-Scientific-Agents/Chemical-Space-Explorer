@@ -12,7 +12,7 @@ Rough estimator of the number of chemically stable molecules, given a maximum **
 - Counts follow GDB-17 conventions: hydrogens are implicit, and only constitutional isomers count (no stereoisomers).
 - Output is a per-size count for every n ≤ N, plus the cumulative total.
 
-Stack: pure Python with no runtime dependencies (numpy/networkx are allowed but unused; rings come from `graph.simple_cycles`). **No RDKit**, which is unavailable and must not be added.
+Stack: pure Python with no runtime dependencies (numpy/networkx are allowed but unused; rings come from `graph.simple_cycles`). **No RDKit**, which is unavailable and must not be added. There is an optional Rust core in `rust/` (PyO3 + maturin), and the Python code remains the reference implementation.
 
 ## Commands
 
@@ -24,6 +24,8 @@ ruff check --line-length 120 .
 python -m chemuniverse --max-atoms 12 --elements C N O F --exact-up-to 6 --samples 10 --seed 0 --jobs 10   # --method knuth for probes
 python -m chemuniverse export --max-atoms 8 --elements C N O F --out DIR --jobs 10   # SMILES dataset
 python scripts/bench.py --jobs 1 10                      # performance numbers for design/prd/0002
+pip install ./rust                                        # optional Rust core (needs rustup + maturin); rebuild after editing rust/
+CHEMUNIVERSE_BACKEND=python pytest                        # force pure Python; =rust requires the core
 ```
 
 ## Design records
@@ -53,6 +55,13 @@ There is one generation tree, and it is used in two ways:
 - **Parallelism** (`jobs`, through `tree._pmap` with a `fork` context): exact subtrees and sampling passes or probe batches run in worker processes.
   - Every pass or probe gets its own seed drawn from the caller's RNG, so results never depend on `jobs`.
   - Keep that property, because `tests/test_parallel.py` checks it.
+- **Rust core** (`rust/`, optional package `chemuniverse_core`, selected in `backend.py`):
+  - It is a line-by-line port of `graph`, `canon`, `rules`, `bonds`, the `tree` children and `export.to_smiles`. It must give the *same* children in the same order, the same counts and the same SMILES as Python, not merely equal totals.
+  - `tests/test_backend_parity.py` enforces this. Any algorithm change goes into both backends.
+  - Rust provides `children`, `count_molecules`, `molecule_smiles` and `expand` (exact mode, scoped threads).
+  - The sampler loops stay in Python, so estimates are bit-identical across backends.
+  - It must not leave threads running, because Python forks afterwards.
+  - Python functions keep `_py`/`_rust` suffixed variants (`children_py`, `count_molecules_py`, `molecule_smiles_py`).
 - **Export** (`export.py`) does a depth-first walk of the same tree and writes `molecules(..., with_orders=True)` as Kekulé SMILES (`to_smiles`).
   - It splits into a fixed 128 subtree tasks, so the files are identical for any `jobs`.
   - `tests/test_export.py` parses the SMILES back and checks that every canonical form is unique and that the counts equal the exact counts.
