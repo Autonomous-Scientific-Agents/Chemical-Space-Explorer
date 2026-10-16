@@ -23,16 +23,25 @@ from chemuniverse import shards
 
 
 def launcher_config(nnodes, flavor):
-    """None (auto-configure) unless an MPI flavor is given; then mirror the auto-configuration for
-    serial tasks with that flavor's mpiexec flags."""
-    if flavor is None or nnodes == 1:
+    """None (auto-configure) on one node; otherwise one worker per node.
+
+    The default PolicyConfig has nchildren=1: a single worker then owns every node, and its local
+    process pool runs all tasks on one host (Crux job 362412). Up to 64 nodes: one level with
+    nchildren = nnodes. Beyond: two levels with fixed_leafs_children_policy and leaf_nodes = nnodes.
+    """
+    if nnodes == 1:
         return None
+    if nnodes <= 64:
+        policy, children_policy = PolicyConfig(nlevels=1, nchildren=nnodes), "simple_split_children_policy"
+    else:
+        policy, children_policy = PolicyConfig(nlevels=2, leaf_nodes=nnodes), "fixed_leafs_children_policy"
     return LauncherConfig(
         child_executor_name="async_mpi",
         task_executor_name="async_processpool",
         comm_name="async_zmq",
-        policy_config=PolicyConfig(nlevels=1 if nnodes <= 64 else 2),
-        mpi_config=MPIConfig(flavor=flavor),
+        children_scheduler_policy=children_policy,
+        policy_config=policy,
+        mpi_config=MPIConfig(flavor=flavor or "mpich"),
         master_logs=True,
         worker_logs=True,
     )

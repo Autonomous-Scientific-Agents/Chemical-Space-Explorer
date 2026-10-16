@@ -45,7 +45,7 @@ LOG=$SUMMARY_DIR/run.log
   if [ -d "$RUN_DIR/logs" ] && [ "$SUMMARY_DIR" != "$RUN_DIR" ]; then
     mkdir -p "$SUMMARY_DIR/el_logs"
     find "$RUN_DIR/logs" -name '*.log' -size -2M -exec cp {} "$SUMMARY_DIR/el_logs/" \;
-    find "$RUN_DIR/logs" -type f | head -50 > "$SUMMARY_DIR/el_logs/index.txt"
+    find "$RUN_DIR/logs" -type f > "$SUMMARY_DIR/el_logs/index.txt" || true   # no head: SIGPIPE + pipefail = exit 141
   fi
   python -c "import json,collections,glob; c=collections.Counter(json.load(open(f))['host'] for f in glob.glob('$RUN_DIR/results/*/*.json')); print('== shards per host:', dict(c))" || true
   [ $status -eq 0 ] && python -m chemuniverse shard reduce "$RUN_DIR"
