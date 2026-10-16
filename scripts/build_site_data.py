@@ -4,7 +4,7 @@ The page lets you pick C plus any of N, O, S, F, Cl, Br, I. All halogens obey
 identical rules, so a count depends only on the non-halogen subset and on how
 many halogens are present: 8 subsets x 5 halogen counts = 40 runs.
 
-    python scripts/build_site_data.py --max-atoms 12 --samples 8 --jobs 10
+    python scripts/build_site_data.py --max-atoms 17 --samples 12 --jobs 10   # ~25 min with the Rust core
 
 Each run is cached in build/site/<key>.json, so an interrupted build resumes.
 """

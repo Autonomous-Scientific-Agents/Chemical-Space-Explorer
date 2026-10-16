@@ -1,6 +1,6 @@
 # ADR 0007: Static web explorer on GitHub Pages with precomputed data
 
-- Status: accepted
+- Status: accepted. The computed range was extended to 17 atoms by ADR 0011.
 - Date: 2026-10-15
 
 ## Context
