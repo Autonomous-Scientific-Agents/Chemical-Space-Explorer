@@ -59,11 +59,14 @@ def main():
     p.add_argument("--walltime", type=int, default=60, help="minutes")
     p.add_argument("--prefix", default=None, help="environment prefix (default /home/USER/chemuniverse-crux)")
     p.add_argument("--run-dir", default=None, help="default /lus/grand/projects/PROJECT/chemuniverse/NAME")
+    p.add_argument("--timeout", type=int, default=None, help="run: stop the ensemble after this many seconds")
     argv = sys.argv[1:]
     plan_args = argv[argv.index("--") + 1:] if "--" in argv else []
     a = p.parse_args(argv[:argv.index("--")] if "--" in argv else argv)
     prefix = a.prefix or f"/home/{a.user}/chemuniverse-crux"
     env = f"export CHEMUNIVERSE_PREFIX={prefix} https_proxy={PROXY} http_proxy={PROXY}"
+    if a.timeout:
+        env += f" CHEMUNIVERSE_TIMEOUT={a.timeout}"
     if a.kind == "probe":
         name = a.name or time.strftime("probe-%Y%m%d-%H%M%S")
         command = ("echo host=$(hostname) rank=${PALS_RANKID:-${PMI_RANK:-none}} nproc=$(nproc); "

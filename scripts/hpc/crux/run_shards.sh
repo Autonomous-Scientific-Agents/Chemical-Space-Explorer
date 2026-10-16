@@ -37,16 +37,14 @@ LOG=$SUMMARY_DIR/run.log
   echo "== $(date -Is) job ${PBS_JOBID:-local} on $(wc -l < "${PBS_NODEFILE:-/dev/null}") nodes, chemuniverse $(git -C "$PREFIX/src" rev-parse --short HEAD)"
   echo "== mpiexec: $(command -v mpiexec || echo none); nodes: $(sort -u "${PBS_NODEFILE:-/dev/null}" | cut -d. -f1 | tr '\n' ' ')"
   if [ ! -f "$RUN_DIR/plan.json" ]; then python -m chemuniverse shard plan "$RUN_DIR" "$@"; fi
-  cd "$RUN_DIR"   # ensemble_launcher writes logs/ into the working directory
+  # ensemble_launcher writes logs/ into the working directory: keep them on /home (IRI-readable, live)
+  cd "$SUMMARY_DIR"
   status=0
-  python "$PREFIX/src/scripts/hpc/run_ensemble.py" "$RUN_DIR" --ncpus 128 --mpi-flavor cray-pals || status=$?
+  # optional cap (seconds) so a hung ensemble still leaves time to collect logs
+  ${CHEMUNIVERSE_TIMEOUT:+timeout $CHEMUNIVERSE_TIMEOUT} python -u "$PREFIX/src/scripts/hpc/run_ensemble.py" "$RUN_DIR" \
+    --ncpus 128 --mpi-flavor cray-pals || status=$?
   [ -f "$RUN_DIR/result.json" ] && [ "$SUMMARY_DIR" != "$RUN_DIR" ] && cp "$RUN_DIR/result.json" "$RUN_DIR/plan.json" "$SUMMARY_DIR/"
-  # ensemble_launcher logs (text) to SUMMARY_DIR, readable through the IRI filesystem API
-  if [ -d "$RUN_DIR/logs" ] && [ "$SUMMARY_DIR" != "$RUN_DIR" ]; then
-    mkdir -p "$SUMMARY_DIR/el_logs"
-    find "$RUN_DIR/logs" -name '*.log' -size -2M -exec cp {} "$SUMMARY_DIR/el_logs/" \;
-    find "$RUN_DIR/logs" -type f > "$SUMMARY_DIR/el_logs/index.txt" || true   # no head: SIGPIPE + pipefail = exit 141
-  fi
+  find "$SUMMARY_DIR/logs" -type f > "$SUMMARY_DIR/logs_index.txt" 2>/dev/null || true
   python -c "import json,collections,glob; c=collections.Counter(json.load(open(f))['host'] for f in glob.glob('$RUN_DIR/results/*/*.json')); print('== shards per host:', dict(c))" || true
   [ $status -eq 0 ] && python -m chemuniverse shard reduce "$RUN_DIR"
   echo "== $(date -Is) exit $status"
