@@ -82,6 +82,10 @@ def shard_main(argv):
     ru.add_argument("--jobs", type=int, default=1)
     rd = sub.add_parser("reduce", help="combine shard results into RUN_DIR/result.json")
     rd.add_argument("run_dir")
+    fz = sub.add_parser("finalize", help="export runs: merge SMILES into checksummed chunks + dataset/manifest.json")
+    fz.add_argument("run_dir")
+    fz.add_argument("--chunk-gb", type=float, default=2.0)
+    fz.add_argument("--delete-parts", action="store_true", help="remove the per-shard SMILES parts afterwards")
     a = p.parse_args(argv)
     t0 = time.time()
     if a.cmd == "plan":
@@ -93,6 +97,8 @@ def shard_main(argv):
         todo = a.index if a.index else shards.pending(a.run_dir)
         _pmap(shards.run_shard, [(a.run_dir, i) for i in todo], a.jobs)
         print(f"ran {len(todo)} shards ({time.time() - t0:.1f} s); {len(shards.pending(a.run_dir))} pending")
+    elif a.cmd == "finalize":
+        shards.finalize(a.run_dir, int(a.chunk_gb * 1e9), a.delete_parts)
     else:
         results, stats = shards.reduce(a.run_dir)
         plan = json.loads((Path(a.run_dir) / "plan.json").read_text())

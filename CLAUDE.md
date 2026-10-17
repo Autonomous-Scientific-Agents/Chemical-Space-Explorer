@@ -62,7 +62,9 @@ There is one generation tree, and it is used in two ways:
   - The sampler loops stay in Python, so estimates are bit-identical across backends.
   - It must not leave threads running, because Python forks afterwards.
   - Python functions keep `_py`/`_rust` suffixed variants (`children_py`, `count_molecules_py`, `molecule_smiles_py`).
-- **Shards** (`shards.py`, `python -m chemuniverse shard plan|run|reduce`) are the multi-node layer.
+- **Shards** (`shards.py`, `python -m chemuniverse shard plan|run|reduce|finalize`) are the multi-node layer.
+  - Exact/export inputs are stored in blocks of 1000 shards (`inputs/<block>.json.gz`), so a worker never loads the whole frontier.
+  - `finalize` (export only) merges the SMILES parts into ~2 GB checksummed chunks and writes `dataset/manifest.json` (ADR 0014).
   - `plan` writes `plan.json` plus a gzip frontier and assignment. Each shard writes its result file atomically; `reduce` must equal the single-machine functions, which `tests/test_shards.py` checks.
   - Crux: `scripts/hpc/run_ensemble.py` (ensemble_launcher), `scripts/hpc/crux/{setup_env.sh,run_shards.sh,iri_job.py}`.
   - Submit through IRI with `~/git/genesis-skills/skills/amsc-skills/iri-api/scripts/iri_api_call.py`. The Crux resource ID is `8b9b42f7-572a-4909-8472-a0453436304c`. Crux jobs clone the repo from GitHub, so push before submitting.
@@ -98,5 +100,6 @@ There is one generation tree, and it is used in two ways:
 - A C,N,O,F run up to 11 atoms gives ≈6×10⁸, about 25× GDB-11 (2.6×10⁷).
 - Exact C,N,O,F counts computed on Crux (ADR 0012):
   - n = 7–12: 67,403; 583,112; 5,526,145; 56,997,371; 634,889,614; 7,605,193,456.
+  - C,N,O,S exact: n = 1–9: 4, 19, 80, 463, 3,155, 24,994, 219,566, 2,129,403, 22,382,806.
   - Use them to check samplers. ADR 0013 notes that small-pass stratified estimates tend to come out a few percent low.
 - `tests/test_counts.py::test_tree_matches_brute_force` checks the canonical augmentation against brute-force enumeration.

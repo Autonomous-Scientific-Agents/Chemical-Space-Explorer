@@ -28,7 +28,8 @@ from .rules import RuleConfig
 from .tree import LevelResult, _expand, _stratified_pass, _summarize, cached_count, children, roots
 
 KINDS = ("exact", "export", "passes")
-VERSION = 1
+VERSION = 2
+BLOCK = 1000  # shards per input block / results directory / SMILES part directory
 
 
 def _write_json(path, data):
@@ -40,12 +41,20 @@ def _write_json(path, data):
 
 
 def result_path(run_dir, i):
-    return Path(run_dir) / "results" / f"{i // 1000:04d}" / f"{i:07d}.json"
+    return Path(run_dir) / "results" / f"{i // BLOCK:04d}" / f"{i:07d}.json"
+
+
+def _block_path(run_dir, b):
+    return Path(run_dir) / "inputs" / f"{b:05d}.json.gz"
 
 
 def plan(run_dir, kind, max_atoms, elements, cfg=None, shards=1000, k_exact=6, passes=10, seed=0, jobs=1,
          log=print, split_level=None, nodes_per_shard=16):
-    """Write run_dir/plan.json and run_dir/frontier.json.gz; returns the plan.
+    """Write run_dir/plan.json plus the shard inputs; returns the plan.
+
+    passes: frontier.json.gz (every pass starts from the whole k_exact level).
+    exact/export: inputs/<block>.json.gz with the nodes of BLOCK shards each, so a worker
+    loads only its block (a full frontier of ~10^6 nodes per worker would exhaust memory).
 
     exact/export split at `split_level`, or else at the first level with at least
     nodes_per_shard * shards nodes. A deeper split makes the largest single subtree, which
@@ -84,11 +93,15 @@ def plan(run_dir, kind, max_atoms, elements, cfg=None, shards=1000, k_exact=6, p
         order = sorted(range(len(level)), key=lambda i: -cost[i])
         n_shards = max(1, min(shards, len(level))) if split < max_atoms else 0
         frontier = level
-        assignment = [order[k::n_shards] for k in range(n_shards)]
-        with gzip.open(run_dir / "assignment.json.gz", "wt") as f:
-            json.dump(assignment, f)
-    with gzip.open(run_dir / "frontier.json.gz", "wt") as f:
-        json.dump([[list(s.labels), list(s.adj)] for s in frontier], f)
+        for b in range(0, n_shards, BLOCK):
+            block = [[[list(level[k].labels), list(level[k].adj)] for k in order[i::n_shards]]
+                     for i in range(b, min(b + BLOCK, n_shards))]
+            _block_path(run_dir, b // BLOCK).parent.mkdir(exist_ok=True)
+            with gzip.open(_block_path(run_dir, b // BLOCK), "wt") as f:
+                json.dump(block, f)
+    if kind == "passes":
+        with gzip.open(run_dir / "frontier.json.gz", "wt") as f:
+            json.dump([[list(s.labels), list(s.adj)] for s in frontier], f)
     p = {
         "version": VERSION,
         "kind": kind,
@@ -112,16 +125,20 @@ def plan(run_dir, kind, max_atoms, elements, cfg=None, shards=1000, k_exact=6, p
 
 @lru_cache(maxsize=4)
 def _load(run_dir):
-    """Plan, rule config, frontier and assignment; cached per worker process."""
+    """Plan, rule config and (passes only) the frontier; cached per worker process."""
     run_dir = Path(run_dir)
     p = json.loads((run_dir / "plan.json").read_text())
-    with gzip.open(run_dir / "frontier.json.gz", "rt") as f:
-        frontier = [Skeleton(tuple(lab), tuple(adj)) for lab, adj in json.load(f)]
-    assignment = None
-    if p["kind"] != "passes":
-        with gzip.open(run_dir / "assignment.json.gz", "rt") as f:
-            assignment = json.load(f)
-    return p, RuleConfig(**p["rules"]), frontier, assignment
+    frontier = None
+    if p["kind"] == "passes":
+        with gzip.open(run_dir / "frontier.json.gz", "rt") as f:
+            frontier = [Skeleton(tuple(lab), tuple(adj)) for lab, adj in json.load(f)]
+    return p, RuleConfig(**p["rules"]), frontier
+
+
+@lru_cache(maxsize=2)
+def _block(run_dir, b):
+    with gzip.open(_block_path(run_dir, b), "rt") as f:
+        return [[Skeleton(tuple(lab), tuple(adj)) for lab, adj in nodes] for nodes in json.load(f)]
 
 
 def pending(run_dir):
@@ -135,13 +152,13 @@ def run_shard(run_dir, i):
     out = result_path(run_dir, i)
     if out.exists():
         return {"shard": i, "skipped": True}
-    p, cfg, frontier, assignment = _load(run_dir)
+    p, cfg, frontier = _load(run_dir)
     t0 = time.time()
     elements, split, max_atoms = p["elements"], p["split_level"], p["max_atoms"]
     if p["kind"] == "passes":
         rows = _stratified_pass(p["seeds"][i], frontier, split, max_atoms, elements, cfg, cached_count)
     else:
-        nodes = [frontier[k] for k in assignment[i]]
+        nodes = _block(run_dir, i // BLOCK)[i % BLOCK]
         if p["kind"] == "exact":
             if core:
                 rows, _ = core.expand(nodes, max_atoms - split, elements, cfg_tuple(cfg), False, 1)
@@ -150,12 +167,12 @@ def run_shard(run_dir, i):
         else:
             from .export import _export_subtrees
 
-            smiles_dir = Path(run_dir) / "smiles"
-            smiles_dir.mkdir(exist_ok=True)
+            smiles_dir = Path(run_dir) / "smiles" / f"{i // BLOCK:04d}"
+            smiles_dir.mkdir(parents=True, exist_ok=True)
             counts = _export_subtrees(i + 1, nodes, split, max_atoms, elements, cfg, str(smiles_dir))
             rows = [(c, None) for c in counts]
     data = {"shard": i, "rows": [list(r) for r in rows], "seconds": round(time.time() - t0, 3),
-            "host": socket.gethostname()}
+            "host": socket.gethostname(), "job": os.environ.get("PBS_JOBID")}
     _write_json(out, data)
     return {"shard": i, "seconds": data["seconds"]}
 
@@ -185,10 +202,6 @@ def reduce(run_dir):
            "rows": [[r.n, r.count, r.se, r.exact, r.skeletons] for r in results]}
     _write_json(run_dir / "result.json", out)
     if p["kind"] == "export":
-        manifest = {"elements": p["elements"], "max_atoms": p["max_atoms"], "rules": p["rules"],
-                    "counts": {str(r.n): r.count for r in results}, "total": sum(r.count for r in results),
-                    "format": "smiles/n{size}_part{k}.smi.gz, one Kekule SMILES per line; each molecule once"}
-        _write_json(run_dir / "manifest.json", manifest)
         _write_levels(run_dir, p, split)
     return results, stats
 
@@ -198,11 +211,99 @@ def _write_levels(run_dir, p, split):
     from .export import molecule_smiles
 
     cfg = RuleConfig(**p["rules"])
-    smiles_dir = Path(run_dir) / "smiles"
-    smiles_dir.mkdir(exist_ok=True)
+    smiles_dir = Path(run_dir) / "smiles" / "serial"
+    smiles_dir.mkdir(parents=True, exist_ok=True)
     level = roots(p["elements"])
     for n in range(1, split + 1):
         if n > 1:
             level = [c for s in level for c in children(s, p["elements"], cfg)]
         with gzip.open(smiles_dir / f"n{n:02d}_part0000.smi.gz", "wt") as f:
             f.write("".join(smi + "\n" for s in level for smi in molecule_smiles(s, cfg)))
+
+
+def _code_version():
+    import subprocess
+
+    try:
+        return subprocess.run(["git", "-C", str(Path(__file__).resolve().parent), "rev-parse", "HEAD"],
+                              capture_output=True, text=True, timeout=10).stdout.strip() or None
+    except Exception:
+        return None
+
+
+def finalize(run_dir, chunk_bytes=2 * 10**9, delete_parts=False, log=print):
+    """Export runs: merge each size's SMILES parts into ~chunk_bytes gzip chunks (gzip members
+    concatenate into a valid gzip file), checksum them and write dataset/manifest.json.
+
+    Molecule counts per chunk come from the shard results, so nothing is decompressed.
+    """
+    import hashlib
+
+    run_dir = Path(run_dir)
+    p = json.loads((run_dir / "plan.json").read_text())
+    if p["kind"] != "export":
+        raise ValueError("finalize applies to export runs")
+    if not (run_dir / "result.json").exists():
+        raise RuntimeError("run reduce first")
+    split, n_shards = p["split_level"], p["n_shards"]
+    shard_rows = [json.loads(result_path(run_dir, i).read_text()) for i in range(n_shards)]
+    out_dir = run_dir / "dataset"
+    out_dir.mkdir(exist_ok=True)
+    files, counts = [], {}
+    t0 = time.time()
+    for n in range(1, p["max_atoms"] + 1):
+        if n <= split:
+            parts = [(run_dir / "smiles" / "serial" / f"n{n:02d}_part0000.smi.gz", p["exact_rows"][n - 1][0])]
+        else:
+            parts = [(run_dir / "smiles" / f"{i // BLOCK:04d}" / f"n{n:02d}_part{i + 1:04d}.smi.gz",
+                      shard_rows[i]["rows"][n - split - 1][0]) for i in range(n_shards)]
+            parts = [(f, c) for f, c in parts if c]
+        counts[n] = sum(c for _, c in parts)
+        k, chunk, written, mols, digest = 0, None, 0, 0, None
+
+        def close():
+            if chunk:
+                chunk.close()
+                files.append({"file": f"dataset/{name}", "size": n, "molecules": mols, "bytes": written,
+                              "sha256": digest.hexdigest()})
+
+        for f, c in parts:
+            if chunk is None or written >= chunk_bytes:
+                close()
+                name = f"n{n:02d}_{k:05d}.smi.gz"
+                chunk, written, mols, digest, k = open(out_dir / name, "wb"), 0, 0, hashlib.sha256(), k + 1
+            with open(f, "rb") as src:
+                while True:
+                    buf = src.read(1 << 24)
+                    if not buf:
+                        break
+                    chunk.write(buf)
+                    digest.update(buf)
+                    written += len(buf)
+            mols += c
+        close()
+        log(f"n={n}: {counts[n]} molecules in {k} chunk(s) ({time.time() - t0:.0f} s)")
+    result = json.loads((run_dir / "result.json").read_text())
+    manifest = {
+        "name": f"chemuniverse-{''.join(p['elements'])}-le{p['max_atoms']}",
+        "description": "All molecules up to max_atoms heavy atoms that pass the chemuniverse stability rules, "
+                       "each exactly once, as Kekule SMILES (implicit hydrogens, constitutional isomers only).",
+        "elements": p["elements"],
+        "max_atoms": p["max_atoms"],
+        "rules": p["rules"],
+        "counts": {str(n): c for n, c in counts.items()},
+        "total": sum(counts.values()),
+        "files": files,
+        "code": {"package_version": VERSION, "git_commit": _code_version()},
+        "jobs": sorted({s["job"] for s in shard_rows if s.get("job")}),
+        "stats": result["stats"],
+        "created": time.strftime("%Y-%m-%d"),
+        "format": "gzip text, one SMILES per line; files are concatenated gzip members",
+    }
+    _write_json(out_dir / "manifest.json", manifest)
+    if delete_parts:
+        import shutil
+
+        shutil.rmtree(run_dir / "smiles")
+    log(f"dataset: {manifest['total']} molecules in {len(files)} files ({time.time() - t0:.0f} s)")
+    return manifest

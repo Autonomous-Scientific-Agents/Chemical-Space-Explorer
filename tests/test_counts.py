@@ -22,6 +22,10 @@ def test_carbon_skeletons():  # connected graphs with max degree <= 4
     assert skel == [1, 1, 2, 6, 21, 78, 353, 1929]
 
 
+def test_cnos_reference_counts():  # exact; 7-9 atoms: 219,566 / 2,129,403 / 22,382,806 (Rust core)
+    assert counts(6, ["C", "N", "O", "S"]) == [4, 19, 80, 463, 3155, 24994]
+
+
 def test_small_hand_counts():
     assert counts(2, ["C"]) == [1, 3]  # CC, C=C, C#C
     assert counts(2, ["C", "O"]) == [2, 5]  # + CO, C=O; O-O banned

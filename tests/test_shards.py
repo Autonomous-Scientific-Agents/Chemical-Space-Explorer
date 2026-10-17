@@ -37,14 +37,28 @@ def test_pass_shards_match_estimate(tmp_path):
     assert shards.reduce(tmp_path)[0] == estimate(7, EL, k_exact=4, samples=6, seed=4)
 
 
-def test_export_shards_match_export(tmp_path):
-    shards.plan(tmp_path / "run", "export", 6, EL, shards=30, log=lambda *_: None)
-    run_all(tmp_path / "run")
-    results, _ = shards.reduce(tmp_path / "run")
+def test_export_shards_finalize_match_export(tmp_path):
+    import hashlib
+    import json
+
+    run = tmp_path / "run"
+    shards.plan(run, "export", 6, EL, shards=30, nodes_per_shard=4, log=lambda *_: None)
+    run_all(run)
+    results, _ = shards.reduce(run)
     counts = export(6, EL, RuleConfig(), tmp_path / "ref", log=lambda *_: None)
     assert [r.count for r in results] == counts
 
-    def smiles(d):
-        return sorted(s for f in d.glob("*.smi.gz") for s in gzip.open(f, "rt").read().split())
+    manifest = shards.finalize(run, chunk_bytes=2000, delete_parts=True, log=lambda *_: None)
+    assert not (run / "smiles").exists()
+    assert manifest["total"] == sum(counts) and [manifest["counts"][str(n)] for n in range(1, 7)] == counts
+    assert json.loads((run / "dataset" / "manifest.json").read_text()) == manifest
+    assert any(f["size"] == 6 for f in manifest["files"][1:]) and len(manifest["files"]) > 6  # chunked
 
-    assert smiles(tmp_path / "run" / "smiles") == smiles(tmp_path / "ref")
+    def smiles(files):
+        return sorted(s for f in files for s in gzip.open(f, "rt").read().split())
+
+    for f in manifest["files"]:
+        data = (run / f["file"]).read_bytes()
+        assert hashlib.sha256(data).hexdigest() == f["sha256"] and len(data) == f["bytes"]
+        assert gzip.decompress(data).count(b"\n") == f["molecules"]
+    assert smiles(run.glob("dataset/*.smi.gz")) == smiles((tmp_path / "ref").glob("*.smi.gz"))

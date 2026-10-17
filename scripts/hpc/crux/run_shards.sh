@@ -51,6 +51,13 @@ LOG=$SUMMARY_DIR/run.log
   find "$SUMMARY_DIR/logs" -type f > "$SUMMARY_DIR/logs_index.txt" 2>/dev/null || true
   python -c "import json,collections,glob; c=collections.Counter(json.load(open(f))['host'] for f in glob.glob('$RUN_DIR/results/*/*.json')); print('== shards per host:', dict(c))" || true
   [ $status -eq 0 ] && python -m chemuniverse shard reduce "$RUN_DIR"
+  # export runs: merge SMILES into ~2 GB checksummed chunks + dataset/manifest.json (ADR 0014)
+  if [ $status -eq 0 ] && [ "$(python -c "import json; print(json.load(open('$RUN_DIR/plan.json'))['kind'])")" = export ]; then
+    mkdir -p "$RUN_DIR/dataset"
+    command -v lfs >/dev/null && lfs setstripe -c 8 "$RUN_DIR/dataset" || true
+    python -m chemuniverse shard finalize "$RUN_DIR" --delete-parts || status=$?
+    [ -f "$RUN_DIR/dataset/manifest.json" ] && cp "$RUN_DIR/dataset/manifest.json" "$SUMMARY_DIR/"
+  fi
   echo "== $(date -Is) exit $status"
   exit $status
 } 2>&1 | tee -a "$LOG"
