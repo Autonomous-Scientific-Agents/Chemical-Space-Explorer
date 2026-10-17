@@ -12,7 +12,8 @@ Paths are absolute: IRI passes $HOME and $USER literally in JSON fields. The com
 once, on the first node (PBS_NODEFILE lists all nodes), in a login shell (bash -lc) so the
 Cray PE modules, including mpiexec from cray-pals, are available.
 Outputs: small files in /home/USER/chemuniverse-runs/NAME (readable with the IRI `view`
-operation); large shard data in /lus/grand/projects/PROJ/chemuniverse/NAME.
+operation); large shard data and datasets on Eagle (ADR 0014), default
+/lus/eagle/projects/datascience/USER/chemuniverse/NAME (--data-root to change).
 """
 import argparse
 import json
@@ -41,7 +42,7 @@ def spec(a, name, command):
             "duration": a.walltime * 60,
             "queue_name": a.queue,
             "account": a.project,
-            "custom_attributes": {"filesystems": "home:grand"},
+            "custom_attributes": {"filesystems": "home:grand:eagle"},
         },
     }
 
@@ -58,7 +59,9 @@ def main():
                                                      "preemptable (<=10 nodes, 72 h)")
     p.add_argument("--walltime", type=int, default=60, help="minutes")
     p.add_argument("--prefix", default=None, help="environment prefix (default /home/USER/chemuniverse-crux)")
-    p.add_argument("--run-dir", default=None, help="default /lus/grand/projects/PROJECT/chemuniverse/NAME")
+    p.add_argument("--data-root", default="/lus/eagle/projects/datascience/{user}/chemuniverse",
+                   help="parent of run directories ({user}, {project} are filled in)")
+    p.add_argument("--run-dir", default=None, help="default DATA_ROOT/NAME")
     p.add_argument("--timeout", type=int, default=None, help="run: stop the ensemble after this many seconds")
     argv = sys.argv[1:]
     plan_args = argv[argv.index("--") + 1:] if "--" in argv else []
@@ -84,7 +87,7 @@ def main():
         if not plan_args:
             p.error("run needs shard plan arguments after --, e.g. -- --kind exact --max-atoms 12 ...")
         name = a.name
-        run_dir = a.run_dir or f"/lus/grand/projects/{a.project}/chemuniverse/{name}"
+        run_dir = a.run_dir or f"{a.data_root.format(user=a.user, project=a.project)}/{name}"
         summary = f"/home/{a.user}/chemuniverse-runs/{name}"
         # pull scripts and Python code (editable install); changes under rust/ need a new setup job
         command = (f"{env} && git -C {prefix}/src pull -q --ff-only && "
