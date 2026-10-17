@@ -102,7 +102,7 @@ There is one generation tree, and it is used in two ways:
   - n = 7–12: 67,403; 583,112; 5,526,145; 56,997,371; 634,889,614; 7,605,193,456.
   - C,N,O,S exact: n = 1–9: 4, 19, 80, 463, 3,155, 24,994, 219,566, 2,129,403, 22,382,806.
   - Strict tier (`RuleConfig.strict()`, ADR 0015), exact n = 1–8:
-    - C,N,O,S: 4, 16, 42, 195, 1,091, 7,517, 58,431, 512,270.
+    - C,N,O,S: 4, 16, 42, 195, 1,091, 7,517, 58,431, 512,270; then (Crux) 4,953,902; 52,349,072; 599,603,843; 7,402,642,835 at n = 9–12.
     - C,N,O,F: 4, 12, 36, 160, 838, 5,432, 39,534, 324,498.
   - Strict rules S1 (chains) and S3 (small hetero rings) are hereditary and prune the tree via `rules.hetero_ok` in both backends; keep them hereditary.
   - Use them to check samplers. ADR 0013 notes that small-pass stratified estimates tend to come out a few percent low.

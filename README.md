@@ -161,7 +161,8 @@ Exact C, N, O, S counts (exported as a dataset; see below):
 
 | Dataset | Molecules | Size | Manifest |
 |---|---|---|---|
-| `chemuniverse-CNOS-le12`: all C, N, O, S molecules up to 12 heavy atoms | 42,655,220,742 | 132 GB (74 gzip SMILES chunks) | [results/chemuniverse-CNOS-le12/manifest.json](results/chemuniverse-CNOS-le12/manifest.json) |
+| `chemuniverse-CNOS-le12`: all C, N, O, S molecules up to 12 heavy atoms, **basic** rules | 42,655,220,742 | 132 GB (74 gzip SMILES chunks) | [results/chemuniverse-CNOS-le12/manifest.json](results/chemuniverse-CNOS-le12/manifest.json) |
+| `chemuniverse-CNOS-le12-strict`: the same with the **strict** tier (ADR 0015) | 8,060,129,218 | 26 GB (23 chunks) | [results/chemuniverse-CNOS-le12-strict/manifest.json](results/chemuniverse-CNOS-le12-strict/manifest.json) |
 
 - The dataset is stored on ALCF Eagle; public Globus access is pending.
 - Each line is one Kekulé SMILES, and every molecule appears exactly once.

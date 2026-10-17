@@ -40,6 +40,14 @@ Add six individually switchable `RuleConfig` fields, all off by default. `RuleCo
 | C,N,O,S | 195 (42%) | 7,517 (30%) | 58,431 (27%) | 512,270 (24%) | 318,195 vs 1,055,896 |
 | C,N,O,F | 160 (72%) | 5,432 (62%) | 39,534 (59%) | 324,498 (56%) | 155,598 vs 316,644 |
 
+## Dataset (2026-10-17)
+
+`chemuniverse-CNOS-le12-strict` holds 8,060,129,218 molecules, **18.9%** of the basic `chemuniverse-CNOS-le12`.
+- Per size: 52,349,072 at n = 10, 599,603,843 at n = 11 and 7,402,642,835 at n = 12.
+- 26.2 GB in 23 chunks, 3.25 bytes per molecule.
+- Crux job 362705: 4 nodes, 8,000 shards, split at 8 atoms (318,195 skeletons). 432,140 core-seconds (120 core-hours, against about 400 for basic), with a 909 s ensemble (93% efficient) and a 394 s parallel finalize.
+- Verified by job 362708: 23 files, 0 bad.
+
 ## Verification
 
 - `tests/test_rules_strict.py` checks one kept and one removed case per rule. Its brute-force test checks that the counts from the pruned tree equal the basic molecules filtered by an independent re-implementation of S1–S6, for every size up to 6 atoms (C,N,O,S).
