@@ -1,0 +1,576 @@
+{
+ "name": "chemuniverse-CNOS-le12",
+ "description": "All molecules up to max_atoms heavy atoms that pass the chemuniverse stability rules, each exactly once, as Kekule SMILES (implicit hydrogens, constitutional isomers only).",
+ "elements": [
+  "C",
+  "N",
+  "O",
+  "S"
+ ],
+ "max_atoms": 12,
+ "rules": {
+  "hypervalent": false,
+  "bond_order_limits": true,
+  "strain": true,
+  "heteroatom": true,
+  "ban_n_o": true,
+  "allow_rings": true,
+  "allow_multiple_bonds": true
+ },
+ "counts": {
+  "1": 4,
+  "2": 19,
+  "3": 80,
+  "4": 463,
+  "5": 3155,
+  "6": 24994,
+  "7": 219566,
+  "8": 2129403,
+  "9": 22382806,
+  "10": 253018485,
+  "11": 3057059302,
+  "12": 39320382465
+ },
+ "total": 42655220742,
+ "files": [
+  {
+   "file": "dataset/n01_00000.smi.gz",
+   "size": 1,
+   "molecules": 4,
+   "bytes": 51,
+   "sha256": "bc0e3ab811a2a301c4fad65b053049cb6ed738f9250933ea1672836dc561bcfb"
+  },
+  {
+   "file": "dataset/n02_00000.smi.gz",
+   "size": 2,
+   "molecules": 19,
+   "bytes": 84,
+   "sha256": "8d4f7b6ef574aa069e1799e9a4cfe354c78e094ac8d092460203173a887164e8"
+  },
+  {
+   "file": "dataset/n03_00000.smi.gz",
+   "size": 3,
+   "molecules": 80,
+   "bytes": 211,
+   "sha256": "6137738419ee1fd2d29ee9e5ca208c8761cd004d2bad679b17f0503a0375c235"
+  },
+  {
+   "file": "dataset/n04_00000.smi.gz",
+   "size": 4,
+   "molecules": 463,
+   "bytes": 1068,
+   "sha256": "fb8851a2a92488990d192fec7f1221fe1782c85eaaa1a4e731d8ff784e273325"
+  },
+  {
+   "file": "dataset/n05_00000.smi.gz",
+   "size": 5,
+   "molecules": 3155,
+   "bytes": 7921,
+   "sha256": "7ee6997190c575e8f5145668a8e72496b6d2189d54acfab89a0699fc7cc3236e"
+  },
+  {
+   "file": "dataset/n06_00000.smi.gz",
+   "size": 6,
+   "molecules": 24994,
+   "bytes": 65215,
+   "sha256": "d444250601d7326b18a0335d13b0d9a29b4a71a7c1746916913f3aa5c61ffa9b"
+  },
+  {
+   "file": "dataset/n07_00000.smi.gz",
+   "size": 7,
+   "molecules": 219566,
+   "bytes": 593736,
+   "sha256": "4f7390ba769096dc1fcd43c0fe17839187313ac81c5e3d0a7c6e71fe13eb159b"
+  },
+  {
+   "file": "dataset/n08_00000.smi.gz",
+   "size": 8,
+   "molecules": 2129403,
+   "bytes": 5966454,
+   "sha256": "0f5181c825ece1682ab02b670953d31786ce221e95cb304836b0582a0d8e62ef"
+  },
+  {
+   "file": "dataset/n09_00000.smi.gz",
+   "size": 9,
+   "molecules": 22382806,
+   "bytes": 75846742,
+   "sha256": "8190a6e707b570e104204ef84c61a90cbb6f89f82ce28e8ece2c3dc4758eb28a"
+  },
+  {
+   "file": "dataset/n10_00000.smi.gz",
+   "size": 10,
+   "molecules": 253018485,
+   "bytes": 776658839,
+   "sha256": "f24a1bd7dfdca1396b35fb21bcac18cb8f9d8429f9ad544a2d9755dcdebacd01"
+  },
+  {
+   "file": "dataset/n11_00000.smi.gz",
+   "size": 11,
+   "molecules": 666668257,
+   "bytes": 2054574541,
+   "sha256": "22d17f169171bcf689fed70d316adb2a715c4ce2d48379ba6543e2a4a10e2490"
+  },
+  {
+   "file": "dataset/n11_00001.smi.gz",
+   "size": 11,
+   "molecules": 666672413,
+   "bytes": 2029387477,
+   "sha256": "35ae8fdfa5b5e2d6a5bb94d4baa6be735d7f16a96b5d4b962cb8d8a5ca1c8ba7"
+  },
+  {
+   "file": "dataset/n11_00002.smi.gz",
+   "size": 11,
+   "molecules": 666675207,
+   "bytes": 2026615738,
+   "sha256": "09ecc08b0c3f8f96d423de70a61bb53619bc2e00156070090646d19dfa5638ea"
+  },
+  {
+   "file": "dataset/n11_00003.smi.gz",
+   "size": 11,
+   "molecules": 666685162,
+   "bytes": 2040474702,
+   "sha256": "5a3c302eb34b398e7ac718771baed32afadee386b9551742689be1b7fb6704fb"
+  },
+  {
+   "file": "dataset/n11_00004.smi.gz",
+   "size": 11,
+   "molecules": 390358263,
+   "bytes": 1196752788,
+   "sha256": "60fa0dee90d34d798af4e3a566f07e2f78c2246d3d685007874df1c3dd47978c"
+  },
+  {
+   "file": "dataset/n12_00000.smi.gz",
+   "size": 12,
+   "molecules": 667674292,
+   "bytes": 2174406461,
+   "sha256": "2a322e391f622ea0c8b5c95461a81da0c6cab5fb5dd58077bdc15278e640e9af"
+  },
+  {
+   "file": "dataset/n12_00001.smi.gz",
+   "size": 12,
+   "molecules": 666823135,
+   "bytes": 2149743156,
+   "sha256": "2eedd4be984ce9d3cc596f1a25c4296d672c96a015e3ac2a6dec83384bf46d22"
+  },
+  {
+   "file": "dataset/n12_00002.smi.gz",
+   "size": 12,
+   "molecules": 667683481,
+   "bytes": 2159391963,
+   "sha256": "89815681bdde72182922fd09df3c66da53d2f879e6629f76031d052fc0cb0cb6"
+  },
+  {
+   "file": "dataset/n12_00003.smi.gz",
+   "size": 12,
+   "molecules": 667314196,
+   "bytes": 2124202572,
+   "sha256": "42de6d2c16b058b27cdbf88877fbd62ead16924111f3f0ee7fa9a39ce468cfdd"
+  },
+  {
+   "file": "dataset/n12_00004.smi.gz",
+   "size": 12,
+   "molecules": 670286393,
+   "bytes": 2088529787,
+   "sha256": "c80ba8f993de71afad823c85f480185452af457cd87744d8a9bd96ccdbd4c206"
+  },
+  {
+   "file": "dataset/n12_00005.smi.gz",
+   "size": 12,
+   "molecules": 666947357,
+   "bytes": 2114104712,
+   "sha256": "73ab6f885609be384600624548c449eed17a7cdad88e288dc61768e64b3776d7"
+  },
+  {
+   "file": "dataset/n12_00006.smi.gz",
+   "size": 12,
+   "molecules": 666702012,
+   "bytes": 2090741038,
+   "sha256": "ae708f63004472668326215bc8cd3dca9c10325baf71abc06c31e919462bde41"
+  },
+  {
+   "file": "dataset/n12_00007.smi.gz",
+   "size": 12,
+   "molecules": 666708915,
+   "bytes": 2076741818,
+   "sha256": "0983cac6f17e85b4b920de1569cd5fe977d7f831866c5e70564a718fb842dc78"
+  },
+  {
+   "file": "dataset/n12_00008.smi.gz",
+   "size": 12,
+   "molecules": 667436798,
+   "bytes": 2058607846,
+   "sha256": "addcd00299ccc3c8da7f6acc420ec521d2d65c1aa8b114610305144fc96f0418"
+  },
+  {
+   "file": "dataset/n12_00009.smi.gz",
+   "size": 12,
+   "molecules": 666916718,
+   "bytes": 2102763350,
+   "sha256": "6795adbd98faaee88f846f09529000e59c0b56b91cf752eb1c26fac4dfeb862e"
+  },
+  {
+   "file": "dataset/n12_00010.smi.gz",
+   "size": 12,
+   "molecules": 666784696,
+   "bytes": 2102549885,
+   "sha256": "528a57619f557ffa7e3ea5b08eff1764dffe3965578a3501123f0b4b4bab3e98"
+  },
+  {
+   "file": "dataset/n12_00011.smi.gz",
+   "size": 12,
+   "molecules": 667716414,
+   "bytes": 2129747242,
+   "sha256": "011a4d8d256b3d05008f86672db05d5d71f3b06c160747d968338d37f80153bd"
+  },
+  {
+   "file": "dataset/n12_00012.smi.gz",
+   "size": 12,
+   "molecules": 667594255,
+   "bytes": 2075758130,
+   "sha256": "19e5a7af18c8784cc183e556f8ea118f5d93864dfa162514b597a3bab787ff56"
+  },
+  {
+   "file": "dataset/n12_00013.smi.gz",
+   "size": 12,
+   "molecules": 667253727,
+   "bytes": 2051909724,
+   "sha256": "d0924929d04412e9d8190be8f997ef6d3e86f79ff0bb73449e5f9e06daf605ab"
+  },
+  {
+   "file": "dataset/n12_00014.smi.gz",
+   "size": 12,
+   "molecules": 669061592,
+   "bytes": 2043915427,
+   "sha256": "f6aafd8d0c592c92e284f3e8884b48028a4c0c9b695df84384645efd7211302b"
+  },
+  {
+   "file": "dataset/n12_00015.smi.gz",
+   "size": 12,
+   "molecules": 666749667,
+   "bytes": 2031361440,
+   "sha256": "8ad5325e77f7e7b7d6b2d84f663eb8126e7787bd0fe95df3854bda56933582f3"
+  },
+  {
+   "file": "dataset/n12_00016.smi.gz",
+   "size": 12,
+   "molecules": 667190091,
+   "bytes": 2095669790,
+   "sha256": "d2c937986d9fc98fbd7b9b5c2f925c9a2692f5fc652fc037423325520c82e332"
+  },
+  {
+   "file": "dataset/n12_00017.smi.gz",
+   "size": 12,
+   "molecules": 666671769,
+   "bytes": 2053953361,
+   "sha256": "27714abf221157ff63c3825e730b21567c2bd021cef5cee822a134cbf9122136"
+  },
+  {
+   "file": "dataset/n12_00018.smi.gz",
+   "size": 12,
+   "molecules": 669043333,
+   "bytes": 2057172275,
+   "sha256": "5714c9c159adde7d705032148066fc2639ac2d3c93958d75fb80baf9b2cfc8a8"
+  },
+  {
+   "file": "dataset/n12_00019.smi.gz",
+   "size": 12,
+   "molecules": 667354322,
+   "bytes": 2082665349,
+   "sha256": "0520ccf5f711ddf5683970da2484d05f05a584a5658baf939292f3088855fb7f"
+  },
+  {
+   "file": "dataset/n12_00020.smi.gz",
+   "size": 12,
+   "molecules": 667179735,
+   "bytes": 2063220615,
+   "sha256": "6f9e88c200a2a40b3c4461f260e5bc909a004b72ca155fa7f851cb26a6d964a3"
+  },
+  {
+   "file": "dataset/n12_00021.smi.gz",
+   "size": 12,
+   "molecules": 667153184,
+   "bytes": 2081502568,
+   "sha256": "b581113d0d2e504badf46d689fa43559f09b1f87c5f44036817d50e546a17b5a"
+  },
+  {
+   "file": "dataset/n12_00022.smi.gz",
+   "size": 12,
+   "molecules": 667471385,
+   "bytes": 2091840394,
+   "sha256": "05fe53d3d9df95a0c19e269b63b66d390c33cf2f95f290065a4b90f48a3cc9ae"
+  },
+  {
+   "file": "dataset/n12_00023.smi.gz",
+   "size": 12,
+   "molecules": 667455131,
+   "bytes": 2067981338,
+   "sha256": "07a92936a0f8e8ce9d3d72d72f9aca2db9da714be280f030c90efbe39bd166d1"
+  },
+  {
+   "file": "dataset/n12_00024.smi.gz",
+   "size": 12,
+   "molecules": 668410624,
+   "bytes": 2083617298,
+   "sha256": "af80a0bbbd3db66f511cd9491a0efbf7002ea1618fd4daec1004da10eb578cb0"
+  },
+  {
+   "file": "dataset/n12_00025.smi.gz",
+   "size": 12,
+   "molecules": 666810140,
+   "bytes": 2056038400,
+   "sha256": "67d66cb93d4fbe96eda5b7ef75348ae6ad882a71bdafd66b110dc1f8a52babee"
+  },
+  {
+   "file": "dataset/n12_00026.smi.gz",
+   "size": 12,
+   "molecules": 666867055,
+   "bytes": 2075882556,
+   "sha256": "ba82a20c7cd35dab1d4d080fa6f40642d0452a6c0daa570df2ca3b2cd0fb593e"
+  },
+  {
+   "file": "dataset/n12_00027.smi.gz",
+   "size": 12,
+   "molecules": 667705876,
+   "bytes": 2063041512,
+   "sha256": "8ac447819e0b76cab700debe5ae18e51d474f6d7f3a7abad72c468386cd4943c"
+  },
+  {
+   "file": "dataset/n12_00028.smi.gz",
+   "size": 12,
+   "molecules": 668032940,
+   "bytes": 2037573628,
+   "sha256": "59da2000b965e2f819ddee14314bc202924c41d1c21d0d8060dc5724707259f7"
+  },
+  {
+   "file": "dataset/n12_00029.smi.gz",
+   "size": 12,
+   "molecules": 667652479,
+   "bytes": 1995181916,
+   "sha256": "9e5d534ff3417e72d3a154172cabfe21bc2d811e492418e1f5a623e7ff753e28"
+  },
+  {
+   "file": "dataset/n12_00030.smi.gz",
+   "size": 12,
+   "molecules": 668346115,
+   "bytes": 2076316076,
+   "sha256": "5d3df93c8d35cc96554fa7a13ceedd5c466970e3e7c7908fa4880ebab64c09af"
+  },
+  {
+   "file": "dataset/n12_00031.smi.gz",
+   "size": 12,
+   "molecules": 668205576,
+   "bytes": 2096718390,
+   "sha256": "8562e3fcfca5e4e00a80df491ef1f22da8d206324e79bea74186bbd906bf2882"
+  },
+  {
+   "file": "dataset/n12_00032.smi.gz",
+   "size": 12,
+   "molecules": 667081322,
+   "bytes": 2072866153,
+   "sha256": "3076a209b385ba6a56812f923d14cf03149b3a0aa2b97f73d102b1dc8662176f"
+  },
+  {
+   "file": "dataset/n12_00033.smi.gz",
+   "size": 12,
+   "molecules": 666896084,
+   "bytes": 2060934509,
+   "sha256": "87998cdee84867c4473eed08f7c6955a412de90e8a6fe23b94c1a889688cd44a"
+  },
+  {
+   "file": "dataset/n12_00034.smi.gz",
+   "size": 12,
+   "molecules": 667556334,
+   "bytes": 2089981136,
+   "sha256": "41ea9e93f3d22ba8d9fa2f1618dd8ddab7caf873b4611ed97d8b8e16a7cd56ca"
+  },
+  {
+   "file": "dataset/n12_00035.smi.gz",
+   "size": 12,
+   "molecules": 667128790,
+   "bytes": 2042334108,
+   "sha256": "b6477a2467b4820cf46648c1b8dc00b14f985b2cc0b5d1b340e0560a1243510f"
+  },
+  {
+   "file": "dataset/n12_00036.smi.gz",
+   "size": 12,
+   "molecules": 666810374,
+   "bytes": 2073468982,
+   "sha256": "598c4c3c886a812e22aa2de06d7a5e09f75f6ce3205659587efe2dcd53d997db"
+  },
+  {
+   "file": "dataset/n12_00037.smi.gz",
+   "size": 12,
+   "molecules": 666837006,
+   "bytes": 2026017364,
+   "sha256": "4d13c8f96403afbf331b1ba1c19e12bf5be01a5da067e85b081cdcce46826d5a"
+  },
+  {
+   "file": "dataset/n12_00038.smi.gz",
+   "size": 12,
+   "molecules": 666949872,
+   "bytes": 2071881893,
+   "sha256": "c66f44ad7d523d5f503b1c49beadf12515f107472bf6d74663da40375fcd8469"
+  },
+  {
+   "file": "dataset/n12_00039.smi.gz",
+   "size": 12,
+   "molecules": 667524827,
+   "bytes": 2062891473,
+   "sha256": "2048910d292eeb241dcf1273c85bfb129b4bc9c52f9110763fea8cd9985b7c77"
+  },
+  {
+   "file": "dataset/n12_00040.smi.gz",
+   "size": 12,
+   "molecules": 668884426,
+   "bytes": 2050924298,
+   "sha256": "3963550568fd92474e34b519d69af9ddbcc47973e56ecef1a7c8d83b054b3205"
+  },
+  {
+   "file": "dataset/n12_00041.smi.gz",
+   "size": 12,
+   "molecules": 669034849,
+   "bytes": 2057205169,
+   "sha256": "5ec5199bc267f10978e22b71cde10feb0470de0c8d683f7b3cc6833587389922"
+  },
+  {
+   "file": "dataset/n12_00042.smi.gz",
+   "size": 12,
+   "molecules": 667616400,
+   "bytes": 2048553637,
+   "sha256": "b2ca8a03b6bb15d6454ed4885a6e8d9f7c6f5f149527e1ab41d76d9a29cb39b5"
+  },
+  {
+   "file": "dataset/n12_00043.smi.gz",
+   "size": 12,
+   "molecules": 667589347,
+   "bytes": 2091420489,
+   "sha256": "a166d9fab38fd403c09cec6603a6a03df392e4083385b61f61998012f206241a"
+  },
+  {
+   "file": "dataset/n12_00044.smi.gz",
+   "size": 12,
+   "molecules": 669523738,
+   "bytes": 2045118193,
+   "sha256": "ed6861ef2a993409137e639eae692a3ead724cca1a2e98116be8775567702907"
+  },
+  {
+   "file": "dataset/n12_00045.smi.gz",
+   "size": 12,
+   "molecules": 667998812,
+   "bytes": 2088829342,
+   "sha256": "d3e08b031462debaac5ffe5133fa34dc834aee2f07086cef8116ea103412ff13"
+  },
+  {
+   "file": "dataset/n12_00046.smi.gz",
+   "size": 12,
+   "molecules": 666730391,
+   "bytes": 2084328438,
+   "sha256": "1c124fb36af975d5f37a4b6c87c71939f38287a19935d0a4ed3a09316e935101"
+  },
+  {
+   "file": "dataset/n12_00047.smi.gz",
+   "size": 12,
+   "molecules": 667889368,
+   "bytes": 2067828666,
+   "sha256": "8452876c8c2fc4ade8215932b7a0144039a0932060989798d55c5d7ac29289a7"
+  },
+  {
+   "file": "dataset/n12_00048.smi.gz",
+   "size": 12,
+   "molecules": 667038091,
+   "bytes": 2086887841,
+   "sha256": "d9b729af832434efe9235ee6a13f743340523a66709dc27f1b86332504aad10d"
+  },
+  {
+   "file": "dataset/n12_00049.smi.gz",
+   "size": 12,
+   "molecules": 666828777,
+   "bytes": 2039087674,
+   "sha256": "240b87f575b1194dfbbcc2d7e78c85c6976446eae4f68e14ed86aa0c37f78499"
+  },
+  {
+   "file": "dataset/n12_00050.smi.gz",
+   "size": 12,
+   "molecules": 667425592,
+   "bytes": 2075904647,
+   "sha256": "3a5a68c8a11cb73d2779eeac8fcc2a47a4ed62e78a40ffba01c47ca9992c8146"
+  },
+  {
+   "file": "dataset/n12_00051.smi.gz",
+   "size": 12,
+   "molecules": 666861199,
+   "bytes": 2088466740,
+   "sha256": "c9f49336e4319042522c4a908522b7cb29bcb93287a1097fca6ecee4bb1bc7d7"
+  },
+  {
+   "file": "dataset/n12_00052.smi.gz",
+   "size": 12,
+   "molecules": 666707657,
+   "bytes": 2071497869,
+   "sha256": "9e4034f36f644719661986d514e0c2dc42349b57cc162e3f8bb41e1aa9aa89bd"
+  },
+  {
+   "file": "dataset/n12_00053.smi.gz",
+   "size": 12,
+   "molecules": 666699941,
+   "bytes": 2094922549,
+   "sha256": "06ddc498771018aed72d418626f7db60f932ffea33fb91314dbd7b7cb8a7d767"
+  },
+  {
+   "file": "dataset/n12_00054.smi.gz",
+   "size": 12,
+   "molecules": 667075403,
+   "bytes": 2021769560,
+   "sha256": "484a09c69df5a3ca3e0815e30ac0fdf1ba4dc583b8b659a5db50b65249901d77"
+  },
+  {
+   "file": "dataset/n12_00055.smi.gz",
+   "size": 12,
+   "molecules": 667353694,
+   "bytes": 2061476252,
+   "sha256": "17d163e0a2403bd9c7256b0354a5c8a6c460fbb6aa8f211c2697eea5a5ab4012"
+  },
+  {
+   "file": "dataset/n12_00056.smi.gz",
+   "size": 12,
+   "molecules": 666894565,
+   "bytes": 2067941493,
+   "sha256": "5fc54ebce8dc98e2136ef96bc5659f13c027350642baea1270f59193314d2529"
+  },
+  {
+   "file": "dataset/n12_00057.smi.gz",
+   "size": 12,
+   "molecules": 666786997,
+   "bytes": 2049521468,
+   "sha256": "a61f06580d4b28c76020b03102a9099b37505fe6a52968d00eab7ba373e183f6"
+  },
+  {
+   "file": "dataset/n12_00058.smi.gz",
+   "size": 12,
+   "molecules": 607455206,
+   "bytes": 1889197203,
+   "sha256": "ff6b3eb84e8e8f6139b594d5a757f408267841786e32a2e9d856b314158f5baf"
+  }
+ ],
+ "code": {
+  "package_version": 2,
+  "git_commit": "a301cce086bcf5310f26981f5e011e226ab34f37"
+ },
+ "jobs": [
+  "362511.crux-pbs-0001.head.cm.crux.alcf.anl.gov"
+ ],
+ "stats": {
+  "shards": 40000,
+  "core_seconds": 1441389.3,
+  "max_shard_seconds": 530.937,
+  "hosts": 4
+ },
+ "created": "2026-10-17",
+ "format": "gzip text, one SMILES per line; files are concatenated gzip members",
+ "location": {
+  "facility": "ALCF",
+  "filesystem": "Eagle",
+  "path": "/lus/eagle/projects/datascience/keceli/chemuniverse/cnos12-export/dataset",
+  "public_access": "pending (Globus guest collection)"
+ }
+}

@@ -150,6 +150,22 @@ Exact C, N, O, F counts per size, computed on ALCF Crux (sizes 10–12 for the f
 |---|---|---|---|---|---|---|
 | molecules | 67,403 | 583,112 | 5,526,145 | 56,997,371 | 634,889,614 | 7,605,193,456 |
 
+Exact C, N, O, S counts (exported as a dataset; see below):
+
+| n | 7 | 8 | 9 | 10 | 11 | 12 |
+|---|---|---|---|---|---|---|
+| molecules | 219,566 | 2,129,403 | 22,382,806 | 253,018,485 | 3,057,059,302 | 39,320,382,465 |
+
+## Datasets
+
+| Dataset | Molecules | Size | Manifest |
+|---|---|---|---|
+| `chemuniverse-CNOS-le12`: all C, N, O, S molecules up to 12 heavy atoms | 42,655,220,742 | 132 GB (74 gzip SMILES chunks) | [results/chemuniverse-CNOS-le12/manifest.json](results/chemuniverse-CNOS-le12/manifest.json) |
+
+- The dataset is stored on ALCF Eagle; public Globus access is pending.
+- Each line is one Kekulé SMILES, and every molecule appears exactly once.
+- The manifest lists every file with its molecule count and SHA-256 checksum, plus the rules and the code commit that produced it.
+
 ## Limitations
 
 - Tautomers count as separate molecules (apart from the enol ban).
