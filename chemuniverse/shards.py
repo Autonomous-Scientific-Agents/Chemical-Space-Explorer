@@ -222,6 +222,20 @@ def _write_levels(run_dir, p, split):
             f.write("".join(smi + "\n" for s in level for smi in molecule_smiles(s, cfg)))
 
 
+STRICT_FIELDS = ("hetero_chains", "ban_s_o", "small_ring_heteroatoms", "tautomers", "thio_gem", "thiocarbonyl")
+
+
+def rule_tier(rules):
+    """'basic', 'strict' (all S1-S6) or 'custom' (some strict rules) for a RuleConfig dict."""
+    on = [bool(rules.get(f)) for f in STRICT_FIELDS]
+    return "strict" if all(on) else "custom" if any(on) else "basic"
+
+
+def dataset_name(p):
+    tier = rule_tier(p["rules"])
+    return f"chemuniverse-{''.join(p['elements'])}-le{p['max_atoms']}" + ("" if tier == "basic" else f"-{tier}")
+
+
 def _code_version():
     import subprocess
 
@@ -299,7 +313,8 @@ def finalize(run_dir, chunk_bytes=2 * 10**9, delete_parts=False, jobs=1, log=pri
         log(f"n={n}: {counts[n]} molecules in {sum(f['size'] == n for f in files)} chunk(s)")
     result = json.loads((run_dir / "result.json").read_text())
     manifest = {
-        "name": f"chemuniverse-{''.join(p['elements'])}-le{p['max_atoms']}",
+        "name": dataset_name(p),
+        "tier": rule_tier(p["rules"]),
         "description": "All molecules up to max_atoms heavy atoms that pass the chemuniverse stability rules, "
                        "each exactly once, as Kekule SMILES (implicit hydrogens, constitutional isomers only).",
         "elements": p["elements"],
@@ -370,3 +385,15 @@ def verify(run_dir, jobs=1, sample=20, log=print):
     _write_json(run_dir / "dataset" / "verify.json", report)
     log(f"verify: {len(res)} files, {len(bad)} bad, {report['molecules']} molecules ({report['seconds']} s)")
     return report
+
+
+def refresh_manifest(run_dir, log=print):
+    """Recompute derived manifest fields (name, tier) from plan.json without touching the data."""
+    run_dir = Path(run_dir)
+    p = json.loads((run_dir / "plan.json").read_text())
+    path = run_dir / "dataset" / "manifest.json"
+    m = json.loads(path.read_text())
+    m["name"], m["tier"] = dataset_name(p), rule_tier(p["rules"])
+    _write_json(path, m)
+    log(f"manifest: {m['name']} ({m['tier']})")
+    return m

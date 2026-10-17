@@ -52,6 +52,10 @@ def test_export_shards_finalize_match_export(tmp_path):
     manifest = shards.finalize(run, chunk_bytes=2000, delete_parts=True, jobs=3, log=lambda *_: None)
     assert [f["sha256"] for f in one["files"]] == [f["sha256"] for f in manifest["files"]]  # independent of jobs
     assert not (run / "smiles").exists()
+    assert manifest["name"] == "chemuniverse-CNOF-le6" and manifest["tier"] == "basic"
+    assert shards.refresh_manifest(run, log=lambda *_: None)["name"] == "chemuniverse-CNOF-le6"
+    assert shards.dataset_name({"elements": ["C", "N", "O", "S"], "max_atoms": 12,
+                                "rules": vars(RuleConfig.strict())}) == "chemuniverse-CNOS-le12-strict"
     assert manifest["total"] == sum(counts) and [manifest["counts"][str(n)] for n in range(1, 7)] == counts
     assert json.loads((run / "dataset" / "manifest.json").read_text()) == manifest
     assert any(f["size"] == 6 for f in manifest["files"][1:]) and len(manifest["files"]) > 6  # chunked
