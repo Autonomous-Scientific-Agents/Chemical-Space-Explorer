@@ -86,6 +86,7 @@ def shard_main(argv):
     fz.add_argument("run_dir")
     fz.add_argument("--chunk-gb", type=float, default=2.0)
     fz.add_argument("--delete-parts", action="store_true", help="remove the per-shard SMILES parts afterwards")
+    fz.add_argument("--jobs", type=int, default=1, help="parallel chunk writers")
     a = p.parse_args(argv)
     t0 = time.time()
     if a.cmd == "plan":
@@ -98,7 +99,7 @@ def shard_main(argv):
         _pmap(shards.run_shard, [(a.run_dir, i) for i in todo], a.jobs)
         print(f"ran {len(todo)} shards ({time.time() - t0:.1f} s); {len(shards.pending(a.run_dir))} pending")
     elif a.cmd == "finalize":
-        shards.finalize(a.run_dir, int(a.chunk_gb * 1e9), a.delete_parts)
+        shards.finalize(a.run_dir, int(a.chunk_gb * 1e9), a.delete_parts, a.jobs)
     else:
         results, stats = shards.reduce(a.run_dir)
         plan = json.loads((Path(a.run_dir) / "plan.json").read_text())

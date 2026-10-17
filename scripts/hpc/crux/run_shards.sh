@@ -55,7 +55,7 @@ LOG=$SUMMARY_DIR/run.log
   if [ $status -eq 0 ] && [ "$(python -c "import json; print(json.load(open('$RUN_DIR/plan.json'))['kind'])")" = export ]; then
     mkdir -p "$RUN_DIR/dataset"
     command -v lfs >/dev/null && lfs setstripe -c 8 "$RUN_DIR/dataset" || true
-    python -m chemuniverse shard finalize "$RUN_DIR" --delete-parts || status=$?
+    python -m chemuniverse shard finalize "$RUN_DIR" --delete-parts --jobs 64 || status=$?
     [ -f "$RUN_DIR/dataset/manifest.json" ] && cp "$RUN_DIR/dataset/manifest.json" "$SUMMARY_DIR/"
   fi
   echo "== $(date -Is) exit $status"

@@ -30,6 +30,7 @@ from .tree import LevelResult, _expand, _stratified_pass, _summarize, cached_cou
 KINDS = ("exact", "export", "passes")
 VERSION = 2
 BLOCK = 1000  # shards per input block / results directory / SMILES part directory
+BYTES_PER_MOLECULE = 3  # gzip Kekule SMILES, measured 2.8-2.9 for CNOF/CNOS up to 9 atoms
 
 
 def _write_json(path, data):
@@ -231,13 +232,34 @@ def _code_version():
         return None
 
 
-def finalize(run_dir, chunk_bytes=2 * 10**9, delete_parts=False, log=print):
+def _write_chunk(out_path, parts):
+    """Concatenate gzip parts into one chunk; returns (bytes, sha256). Runs in a worker process."""
+    import hashlib
+
+    digest, written = hashlib.sha256(), 0
+    with open(out_path, "wb") as chunk:
+        for f in parts:
+            with open(f, "rb") as src:
+                while True:
+                    buf = src.read(1 << 24)
+                    if not buf:
+                        break
+                    chunk.write(buf)
+                    digest.update(buf)
+                    written += len(buf)
+    return written, digest.hexdigest()
+
+
+def finalize(run_dir, chunk_bytes=2 * 10**9, delete_parts=False, jobs=1, log=print):
     """Export runs: merge each size's SMILES parts into ~chunk_bytes gzip chunks (gzip members
     concatenate into a valid gzip file), checksum them and write dataset/manifest.json.
 
-    Molecule counts per chunk come from the shard results, so nothing is decompressed.
+    Chunks are planned from the per-shard molecule counts (about BYTES_PER_MOLECULE each), so
+    planning needs no stat calls, and built in parallel: on Lustre, opening ~10^4-10^5 small
+    part files one by one is metadata-bound (job 362511 merged only ~2 MB/s serially). The plan
+    depends only on the counts, so the files are identical for any number of jobs.
     """
-    import hashlib
+    from .tree import _pmap
 
     run_dir = Path(run_dir)
     p = json.loads((run_dir / "plan.json").read_text())
@@ -249,40 +271,32 @@ def finalize(run_dir, chunk_bytes=2 * 10**9, delete_parts=False, log=print):
     shard_rows = [json.loads(result_path(run_dir, i).read_text()) for i in range(n_shards)]
     out_dir = run_dir / "dataset"
     out_dir.mkdir(exist_ok=True)
-    files, counts = [], {}
     t0 = time.time()
+    target = max(1, chunk_bytes // BYTES_PER_MOLECULE)
+    chunks, counts = [], {}  # (name, size, molecules, [part paths])
     for n in range(1, p["max_atoms"] + 1):
         if n <= split:
             parts = [(run_dir / "smiles" / "serial" / f"n{n:02d}_part0000.smi.gz", p["exact_rows"][n - 1][0])]
         else:
             parts = [(run_dir / "smiles" / f"{i // BLOCK:04d}" / f"n{n:02d}_part{i + 1:04d}.smi.gz",
                       shard_rows[i]["rows"][n - split - 1][0]) for i in range(n_shards)]
-            parts = [(f, c) for f, c in parts if c]
+        parts = [(f, c) for f, c in parts if c]
         counts[n] = sum(c for _, c in parts)
-        k, chunk, written, mols, digest = 0, None, 0, 0, None
-
-        def close():
-            if chunk:
-                chunk.close()
-                files.append({"file": f"dataset/{name}", "size": n, "molecules": mols, "bytes": written,
-                              "sha256": digest.hexdigest()})
-
+        group, mols = [], 0
         for f, c in parts:
-            if chunk is None or written >= chunk_bytes:
-                close()
-                name = f"n{n:02d}_{k:05d}.smi.gz"
-                chunk, written, mols, digest, k = open(out_dir / name, "wb"), 0, 0, hashlib.sha256(), k + 1
-            with open(f, "rb") as src:
-                while True:
-                    buf = src.read(1 << 24)
-                    if not buf:
-                        break
-                    chunk.write(buf)
-                    digest.update(buf)
-                    written += len(buf)
+            group.append(str(f))
             mols += c
-        close()
-        log(f"n={n}: {counts[n]} molecules in {k} chunk(s) ({time.time() - t0:.0f} s)")
+            if mols >= target:
+                chunks.append((f"n{n:02d}_{sum(ch[1] == n for ch in chunks):05d}.smi.gz", n, mols, group))
+                group, mols = [], 0
+        if group:
+            chunks.append((f"n{n:02d}_{sum(ch[1] == n for ch in chunks):05d}.smi.gz", n, mols, group))
+    log(f"finalize: {len(chunks)} chunks from {sum(len(ch[3]) for ch in chunks)} parts, {jobs} jobs")
+    written = _pmap(_write_chunk, [(str(out_dir / name), group) for name, _, _, group in chunks], jobs)
+    files = [{"file": f"dataset/{name}", "size": n, "molecules": mols, "bytes": nbytes, "sha256": sha}
+             for (name, n, mols, _), (nbytes, sha) in zip(chunks, written)]
+    for n in counts:
+        log(f"n={n}: {counts[n]} molecules in {sum(f['size'] == n for f in files)} chunk(s)")
     result = json.loads((run_dir / "result.json").read_text())
     manifest = {
         "name": f"chemuniverse-{''.join(p['elements'])}-le{p['max_atoms']}",
