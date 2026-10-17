@@ -572,5 +572,12 @@
   "filesystem": "Eagle",
   "path": "/lus/eagle/projects/datascience/keceli/chemuniverse/cnos12-export/dataset",
   "public_access": "pending (Globus guest collection)"
+ },
+ "tier": "basic",
+ "verified": {
+  "job": "362542",
+  "files": 74,
+  "bad": 0,
+  "molecules": 42655220742
  }
 }

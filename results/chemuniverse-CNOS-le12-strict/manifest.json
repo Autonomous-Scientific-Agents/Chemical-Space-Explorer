@@ -1,0 +1,232 @@
+{
+ "name": "chemuniverse-CNOS-le12-strict",
+ "description": "All molecules up to max_atoms heavy atoms that pass the chemuniverse stability rules, each exactly once, as Kekule SMILES (implicit hydrogens, constitutional isomers only).",
+ "elements": [
+  "C",
+  "N",
+  "O",
+  "S"
+ ],
+ "max_atoms": 12,
+ "rules": {
+  "hypervalent": false,
+  "bond_order_limits": true,
+  "strain": true,
+  "heteroatom": true,
+  "ban_n_o": true,
+  "allow_rings": true,
+  "allow_multiple_bonds": true,
+  "hetero_chains": true,
+  "ban_s_o": true,
+  "small_ring_heteroatoms": true,
+  "tautomers": true,
+  "thio_gem": true,
+  "thiocarbonyl": true
+ },
+ "counts": {
+  "1": 4,
+  "2": 16,
+  "3": 42,
+  "4": 195,
+  "5": 1091,
+  "6": 7517,
+  "7": 58431,
+  "8": 512270,
+  "9": 4953902,
+  "10": 52349072,
+  "11": 599603843,
+  "12": 7402642835
+ },
+ "total": 8060129218,
+ "files": [
+  {
+   "file": "dataset/n01_00000.smi.gz",
+   "size": 1,
+   "molecules": 4,
+   "bytes": 51,
+   "sha256": "acac700e0bab7b59796783ec9b49209e8b5c94f4c9e857e226c49b7b2fca2bf0"
+  },
+  {
+   "file": "dataset/n02_00000.smi.gz",
+   "size": 2,
+   "molecules": 16,
+   "bytes": 83,
+   "sha256": "154b7a688d98d456369803977b37daaf68b53e4e626fe1c9bbeb22de728f7a6d"
+  },
+  {
+   "file": "dataset/n03_00000.smi.gz",
+   "size": 3,
+   "molecules": 42,
+   "bytes": 145,
+   "sha256": "5baaff2040af65749a6bb8783259d0fa02156aa7bdfab64f6914b99c2597805d"
+  },
+  {
+   "file": "dataset/n04_00000.smi.gz",
+   "size": 4,
+   "molecules": 195,
+   "bytes": 497,
+   "sha256": "2f209653dcaccee037a1899512267a89bc5d539416f6abbf34b2bf5c8c4ce0ed"
+  },
+  {
+   "file": "dataset/n05_00000.smi.gz",
+   "size": 5,
+   "molecules": 1091,
+   "bytes": 2770,
+   "sha256": "d022d8f6bc11fde9d9a2d6d29aaadcb591c0fd820be9c8a7289ea9bbe499bdcf"
+  },
+  {
+   "file": "dataset/n06_00000.smi.gz",
+   "size": 6,
+   "molecules": 7517,
+   "bytes": 20718,
+   "sha256": "ab5a52ef775e03d27fefe4ad4eb5ea6ba073486ec84ed9977e48d7644a1ad3b3"
+  },
+  {
+   "file": "dataset/n07_00000.smi.gz",
+   "size": 7,
+   "molecules": 58431,
+   "bytes": 163720,
+   "sha256": "3dab5978dfc2ef7199e13e3dad8ed3dc5527d4853f72b41c0cf76d49d40138d1"
+  },
+  {
+   "file": "dataset/n08_00000.smi.gz",
+   "size": 8,
+   "molecules": 512270,
+   "bytes": 1489517,
+   "sha256": "aca141523ce80d348762b4afc52797e1a07ea349ab038d832906707ff642200c"
+  },
+  {
+   "file": "dataset/n09_00000.smi.gz",
+   "size": 9,
+   "molecules": 4953902,
+   "bytes": 17592372,
+   "sha256": "7e9f246dd7137cfada92cf2d87af8b5b83494ea7ca99924013b766af9295367e"
+  },
+  {
+   "file": "dataset/n10_00000.smi.gz",
+   "size": 10,
+   "molecules": 52349072,
+   "bytes": 168999979,
+   "sha256": "8f33c317ca49815bc1e0f5f9a53438e8f768c5832470ef9b2f0e2ae3e3a642d4"
+  },
+  {
+   "file": "dataset/n11_00000.smi.gz",
+   "size": 11,
+   "molecules": 599603843,
+   "bytes": 1922405750,
+   "sha256": "52895c62c517baf6b9c25cc9626e6d063849d115ccf7ae7258f0fad6bfed7a7a"
+  },
+  {
+   "file": "dataset/n12_00000.smi.gz",
+   "size": 12,
+   "molecules": 667220474,
+   "bytes": 2226876883,
+   "sha256": "426a912611f0e8645d3aeb554bbc0a3c73e531ed22e0836cc7c5c391450a98b7"
+  },
+  {
+   "file": "dataset/n12_00001.smi.gz",
+   "size": 12,
+   "molecules": 667056998,
+   "bytes": 2193468673,
+   "sha256": "c5d9abcb6cd0ee33852de4aea93fc0db277682c588045fd9c357484161797905"
+  },
+  {
+   "file": "dataset/n12_00002.smi.gz",
+   "size": 12,
+   "molecules": 666705250,
+   "bytes": 2166629882,
+   "sha256": "dbd9523a308777411b05ab523c68260b1e64001369c44308ed540bcbfcc1d2ac"
+  },
+  {
+   "file": "dataset/n12_00003.smi.gz",
+   "size": 12,
+   "molecules": 667222658,
+   "bytes": 2176211036,
+   "sha256": "d9d963fe47aad8099b88ba0fe2df43ad7745b4172100bdb02760e35bb8c6cbd7"
+  },
+  {
+   "file": "dataset/n12_00004.smi.gz",
+   "size": 12,
+   "molecules": 666753352,
+   "bytes": 2176521749,
+   "sha256": "28c13baa8cfe5105ef3a33c7cb23f1a76f3ef7113e972366fd694fb97ed6d0e9"
+  },
+  {
+   "file": "dataset/n12_00005.smi.gz",
+   "size": 12,
+   "molecules": 666748458,
+   "bytes": 2179176257,
+   "sha256": "35cc0130c5392c5c0c123eea510b55ba8fe17785de7693c799d5f5d72a0785ab"
+  },
+  {
+   "file": "dataset/n12_00006.smi.gz",
+   "size": 12,
+   "molecules": 667514293,
+   "bytes": 2141989064,
+   "sha256": "e07d52d98896eb2a7d5a4ca60e9d15f3e1631897edb14bd09d9cfac61482ea79"
+  },
+  {
+   "file": "dataset/n12_00007.smi.gz",
+   "size": 12,
+   "molecules": 667130098,
+   "bytes": 2157661323,
+   "sha256": "cda10760da46aaa2e2ead0efea8a6e4f0f198a3d2347fd7d60ffdb7551daa6de"
+  },
+  {
+   "file": "dataset/n12_00008.smi.gz",
+   "size": 12,
+   "molecules": 667859413,
+   "bytes": 2171797572,
+   "sha256": "08ee99966e246d329bbd6169db6933ed21322c263095bc30b05e999cff7ad7c9"
+  },
+  {
+   "file": "dataset/n12_00009.smi.gz",
+   "size": 12,
+   "molecules": 666808643,
+   "bytes": 2161460704,
+   "sha256": "5658f2b7a4cbe8aaa05a37ea493cf28f82e1f482ab74839bf29aacff4c731c5e"
+  },
+  {
+   "file": "dataset/n12_00010.smi.gz",
+   "size": 12,
+   "molecules": 667121583,
+   "bytes": 2148964505,
+   "sha256": "7fe2348ac13b1fecaf6eaca4bf661c423c6e81ccbe149a62dc453cee5be0d844"
+  },
+  {
+   "file": "dataset/n12_00011.smi.gz",
+   "size": 12,
+   "molecules": 64501615,
+   "bytes": 203221911,
+   "sha256": "76324774b1ee987a9b66fff0317b4e5e8f49ac7ff41cb68b24d487264feddcfa"
+  }
+ ],
+ "code": {
+  "package_version": 2,
+  "git_commit": "cc5d2fcb41e4c62c9232ac5caf2e456cb8552b4f"
+ },
+ "jobs": [
+  "362705.crux-pbs-0001.head.cm.crux.alcf.anl.gov"
+ ],
+ "stats": {
+  "shards": 8000,
+  "core_seconds": 432140.0,
+  "max_shard_seconds": 165.083,
+  "hosts": 4
+ },
+ "created": "2026-10-17",
+ "format": "gzip text, one SMILES per line; files are concatenated gzip members",
+ "tier": "strict",
+ "location": {
+  "facility": "ALCF",
+  "filesystem": "Eagle",
+  "path": "/lus/eagle/projects/datascience/keceli/chemuniverse/cnos12-strict/dataset",
+  "public_access": "pending (Globus guest collection)"
+ },
+ "verified": {
+  "job": "362708",
+  "files": 23,
+  "bad": 0,
+  "molecules": 8060129218
+ }
+}
