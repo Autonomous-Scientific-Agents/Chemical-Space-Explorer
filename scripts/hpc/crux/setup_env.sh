@@ -37,6 +37,10 @@ uv pip install -q -e "src[test]" "ensemble_launcher @ git+https://github.com/arg
 # Rust toolchain inside the prefix, then the core built for Zen2
 export RUSTUP_HOME=$PREFIX/rustup CARGO_HOME=$PREFIX/cargo PATH=$PREFIX/cargo/bin:$PATH
 [ -x "$CARGO_HOME/bin/cargo" ] || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --no-modify-path
+# Link with the system gcc: in a login shell `cc` is the Cray PE wrapper, whose LTO plugin
+# options rust-lld rejects ("unknown plugin option 'defaults=cray'", setup job 362703).
+SYS_CC=$(command -v /usr/bin/gcc || command -v /usr/bin/cc)
+export CC=$SYS_CC CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=$SYS_CC
 RUSTFLAGS="-C target-cpu=znver2" uv pip install -q --reinstall ./src/rust
 
 # check: Rust core present, test suite, a short single-node benchmark (one BLAS/OpenMP thread per process)
