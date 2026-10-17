@@ -49,8 +49,9 @@ def spec(a, name, command):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("kind", choices=["setup", "run", "probe"],
-                   help="setup: build the environment; run: a sharded job; probe: report how the job is launched")
+    p.add_argument("kind", choices=["setup", "run", "probe", "cmd"],
+                   help="setup: build the environment; run: a sharded job; probe: report how the job is launched; "
+                        "cmd: run `python -m chemuniverse <args after -->` in the environment (e.g. shard verify)")
     p.add_argument("--user", required=True, help="ALCF username")
     p.add_argument("--project", required=True, help="ALCF project with a Crux allocation")
     p.add_argument("--name", default=None, help="run name (default: setup-<timestamp>)")
@@ -81,6 +82,14 @@ def main():
         command = (f"{env} && mkdir -p {prefix} && "
                    f"(test -d {src}/.git || git clone -q {REPO} {src}) && git -C {src} pull -q --ff-only && "
                    f"bash {src}/scripts/hpc/crux/setup_env.sh")
+    elif a.kind == "cmd":
+        if not a.name or not plan_args:
+            p.error("cmd needs --name and chemuniverse arguments after --")
+        name = a.name
+        out = f"/home/{a.user}/chemuniverse-runs/{name}"
+        command = (f"{env} && git -C {prefix}/src pull -q --ff-only && source {prefix}/venv/bin/activate && "
+                   "export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 && "
+                   f"python -u -m chemuniverse {' '.join(shlex.quote(x) for x in plan_args)} 2>&1 | tee {out}/run.log")
     else:
         if not a.name:
             p.error("run needs --name")

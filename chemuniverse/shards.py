@@ -321,3 +321,52 @@ def finalize(run_dir, chunk_bytes=2 * 10**9, delete_parts=False, jobs=1, log=pri
         shutil.rmtree(run_dir / "smiles")
     log(f"dataset: {manifest['total']} molecules in {len(files)} files ({time.time() - t0:.0f} s)")
     return manifest
+
+
+def _verify_file(path, expected_bytes, expected_sha, expected_lines, sample):
+    """Checksum, line count and a sample of parsed SMILES for one dataset chunk."""
+    import gzip
+    import hashlib
+
+    digest, nbytes = hashlib.sha256(), 0
+    with open(path, "rb") as f:
+        while True:
+            buf = f.read(1 << 24)
+            if not buf:
+                break
+            digest.update(buf)
+            nbytes += len(buf)
+    lines, head = 0, []
+    with gzip.open(path, "rb") as f:
+        while True:
+            buf = f.read(1 << 24)
+            if not buf:
+                break
+            lines += buf.count(b"\n")
+            if len(head) < sample:
+                head += buf.split(b"\n")[:sample - len(head)]
+    errors = []
+    if nbytes != expected_bytes:
+        errors.append(f"bytes {nbytes} != {expected_bytes}")
+    if digest.hexdigest() != expected_sha:
+        errors.append("sha256 mismatch")
+    if lines != expected_lines:
+        errors.append(f"lines {lines} != {expected_lines}")
+    return {"file": str(path), "errors": errors, "sample": [h.decode() for h in head if h]}
+
+
+def verify(run_dir, jobs=1, sample=20, log=print):
+    """Re-read every dataset chunk: sha256, byte size and line count against dataset/manifest.json."""
+    from .tree import _pmap
+
+    run_dir = Path(run_dir)
+    m = json.loads((run_dir / "dataset" / "manifest.json").read_text())
+    t0 = time.time()
+    res = _pmap(_verify_file, [(str(run_dir / f["file"]), f["bytes"], f["sha256"], f["molecules"], sample)
+                               for f in m["files"]], jobs)
+    bad = [r for r in res if r["errors"]]
+    report = {"files": len(res), "bad": bad, "molecules": sum(f["molecules"] for f in m["files"]),
+              "samples": {Path(r["file"]).name: r["sample"][:5] for r in res}, "seconds": round(time.time() - t0, 1)}
+    _write_json(run_dir / "dataset" / "verify.json", report)
+    log(f"verify: {len(res)} files, {len(bad)} bad, {report['molecules']} molecules ({report['seconds']} s)")
+    return report

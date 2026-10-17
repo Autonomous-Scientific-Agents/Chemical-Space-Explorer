@@ -64,3 +64,8 @@ def test_export_shards_finalize_match_export(tmp_path):
         assert hashlib.sha256(data).hexdigest() == f["sha256"] and len(data) == f["bytes"]
         assert gzip.decompress(data).count(b"\n") == f["molecules"]
     assert smiles(run.glob("dataset/*.smi.gz")) == smiles((tmp_path / "ref").glob("*.smi.gz"))
+    assert shards.verify(run, jobs=2, log=lambda *_: None)["bad"] == []
+    first = run / manifest["files"][0]["file"]
+    first.write_bytes(first.read_bytes() + gzip.compress(b"CC\n"))  # corrupt: extra molecule
+    bad = shards.verify(run, log=lambda *_: None)["bad"]
+    assert len(bad) == 1 and "sha256 mismatch" in bad[0]["errors"]
