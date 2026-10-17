@@ -75,7 +75,7 @@ There is one generation tree, and it is used in two ways:
   - `stratified_estimate` (the default) is Chen's stratified sampling. Per level, it keeps one weighted representative per `stratum()`, where a stratum is (atoms per free-valence count, ring count).
   - `knuth_estimate` uses random probes. It is heavy-tailed, so its error bars are unreliable.
   - Both return independent samples, which `_summarize` turns into mean ± SE.
-- **Rules** (`RuleConfig`, each group toggleable):
+- **Rules** (`RuleConfig`, each group toggleable; plus the optional strict tier S1–S6, ADR 0015):
   - valence and connectivity;
   - bond-order limits;
   - GDB-style strain filters: small-ring triple bonds and allenes, double bonds in 3- or 4-membered rings, an approximate Bredt rule;
@@ -101,5 +101,9 @@ There is one generation tree, and it is used in two ways:
 - Exact C,N,O,F counts computed on Crux (ADR 0012):
   - n = 7–12: 67,403; 583,112; 5,526,145; 56,997,371; 634,889,614; 7,605,193,456.
   - C,N,O,S exact: n = 1–9: 4, 19, 80, 463, 3,155, 24,994, 219,566, 2,129,403, 22,382,806.
+  - Strict tier (`RuleConfig.strict()`, ADR 0015), exact n = 1–8:
+    - C,N,O,S: 4, 16, 42, 195, 1,091, 7,517, 58,431, 512,270.
+    - C,N,O,F: 4, 12, 36, 160, 838, 5,432, 39,534, 324,498.
+  - Strict rules S1 (chains) and S3 (small hetero rings) are hereditary and prune the tree via `rules.hetero_ok` in both backends; keep them hereditary.
   - Use them to check samplers. ADR 0013 notes that small-pass stratified estimates tend to come out a few percent low.
 - `tests/test_counts.py::test_tree_matches_brute_force` checks the canonical augmentation against brute-force enumeration.

@@ -132,6 +132,7 @@ Each group can be turned off from the command line.
 | Strain | no triple bond in a ring < 8 atoms; no double bond in a 3- or 4-membered ring; no cumulated bonds at an atom in a ring < 9; Bredt (no multiple bond at a bridgehead of rings ≤ 7) | `--no-strain` |
 | Heteroatoms | no O–O, N–O or halogen–(N, O, S, halogen) bonds; no enols; no hemiacetals, hemiaminals or gem-diols | `--no-heteroatom`, `--allow-n-o` |
 | Validation | acyclic only / single bonds only | `--no-rings`, `--no-multiple-bonds` |
+| **Strict tier** (`--rules strict`, off by default) | S1 no heteroatom chains X–X–X; S2 no S–O; S3 no 3/4-ring with ≥ 2 heteroatoms; S4 no enethiols, NH-enamines, ynols/ynamines, imidic/thiono acids, ketenes; S5 no hemithioacetals; S6 no thioaldehydes/thioketones. Keeps 24% of C,N,O,S and 56% of C,N,O,F molecules at 8 atoms (ADR 0015) | `--no-hetero-chains`, `--allow-s-o`, `--no-small-ring-heteroatoms`, `--no-tautomer-filter`, `--no-thio-gem`, `--no-thiocarbonyl-filter` |
 
 ## Checks
 
@@ -164,6 +165,7 @@ Exact C, N, O, S counts (exported as a dataset; see below):
 
 - The dataset is stored on ALCF Eagle; public Globus access is pending.
 - Each line is one Kekulé SMILES, and every molecule appears exactly once.
+- The dataset uses the **basic** rules. It therefore includes heteroatom chains, unstable tautomers and thioaldehydes, which the strict tier removes. Treat it as an upper-bound enumeration, not a list of stable compounds.
 - The manifest lists every file with its molecule count and SHA-256 checksum, plus the rules and the code commit that produced it.
 
 ## Limitations

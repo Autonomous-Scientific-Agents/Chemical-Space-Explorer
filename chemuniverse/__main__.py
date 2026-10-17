@@ -8,8 +8,19 @@ from .rules import RuleConfig
 from .tree import estimate
 
 
+STRICT_SWITCHES = {  # flag -> RuleConfig field turned off (strict tier, ADR 0015)
+    "--no-hetero-chains": "hetero_chains", "--allow-s-o": "ban_s_o",
+    "--no-small-ring-heteroatoms": "small_ring_heteroatoms", "--no-tautomer-filter": "tautomers",
+    "--no-thio-gem": "thio_gem", "--no-thiocarbonyl-filter": "thiocarbonyl",
+}
+
+
 def add_rule_args(p):
     p.add_argument("--elements", nargs="+", default=["C", "N", "O", "F"])
+    p.add_argument("--rules", choices=["basic", "strict"], default="basic",
+                   help="basic: valence, strain, heteroatom rules (ADR 0005); strict: + S1-S6 (ADR 0015)")
+    for flag in STRICT_SWITCHES:
+        p.add_argument(flag, action="store_true", help="strict tier: turn this rule off")
     p.add_argument("--jobs", type=int, default=1, help="worker processes (results do not depend on it)")
     p.add_argument("--hypervalent", action="store_true", help="allow S(IV/VI) and P(V)")
     p.add_argument("--allow-n-o", action="store_true", help="allow N-O bonds")
@@ -21,7 +32,15 @@ def add_rule_args(p):
 
 
 def rule_config(a):
-    return RuleConfig(
+    from dataclasses import replace
+
+    base = RuleConfig.strict() if a.rules == "strict" else RuleConfig()
+    off = {field: False for flag, field in STRICT_SWITCHES.items() if getattr(a, flag[2:].replace("-", "_"))}
+    return replace(base, **off, **_basic_fields(a))
+
+
+def _basic_fields(a):
+    return dict(
         hypervalent=a.hypervalent,
         bond_order_limits=not a.no_bond_order_limits,
         strain=not a.no_strain,

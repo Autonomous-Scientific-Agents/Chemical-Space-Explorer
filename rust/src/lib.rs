@@ -16,18 +16,26 @@ use rules::{Cfg, SYMBOLS};
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
-type CfgTuple = (bool, bool, bool, bool, bool, bool, bool);
+/// RuleConfig fields in declaration order (a list: PyO3 tuples stop at 12 elements).
+type CfgTuple = Vec<bool>;
 type PyNode = (Vec<&'static str>, Vec<u64>);
 
 fn cfg_from(t: CfgTuple) -> Cfg {
+    let f = |i: usize| t.get(i).copied().unwrap_or(false);
     Cfg {
-        hypervalent: t.0,
-        bond_order_limits: t.1,
-        strain: t.2,
-        heteroatom: t.3,
-        ban_n_o: t.4,
-        allow_rings: t.5,
-        allow_multiple_bonds: t.6,
+        hypervalent: f(0),
+        bond_order_limits: f(1),
+        strain: f(2),
+        heteroatom: f(3),
+        ban_n_o: f(4),
+        allow_rings: f(5),
+        allow_multiple_bonds: f(6),
+        hetero_chains: f(7),
+        ban_s_o: f(8),
+        small_ring_heteroatoms: f(9),
+        tautomers: f(10),
+        thio_gem: f(11),
+        thiocarbonyl: f(12),
     }
 }
 

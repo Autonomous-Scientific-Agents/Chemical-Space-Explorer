@@ -16,7 +16,7 @@ from .backend import cfg_tuple, core
 from .bonds import count_molecules
 from .canon import _nbr_lists, canonicalize, initial_colors, invariant_hash, refine, same_orbit
 from .graph import Skeleton, non_cut_vertices
-from .rules import RuleConfig
+from .rules import RuleConfig, hetero_ok
 
 
 def roots(elements):
@@ -58,12 +58,15 @@ def children_py(skel, elements, cfg):
     n = skel.n
     spare = [cfg.max_valence(lab) - bin(a).count("1") for lab, a in zip(skel.labels, skel.adj)]
     buckets = {}  # invariant hash -> [[child, canonical form or None], ...]
+    strict_tree = cfg.hetero_chains or cfg.small_ring_heteroatoms
     for e in elements:
         eligible = [v for v in range(n) if spare[v] > 0 and cfg.pair_allowed(e, skel.labels[v])]
         max_size = min(cfg.max_valence(e), len(eligible), 1 if not cfg.allow_rings else n)
         for size in range(1, max_size + 1):
             for subset in combinations(eligible, size):
                 child = skel.add_vertex(e, sum(1 << v for v in subset))
+                if strict_tree and not hetero_ok(cfg, child.labels, child.adj, n):
+                    continue
                 ok, form = _accept(child, n)
                 if not ok:
                     continue

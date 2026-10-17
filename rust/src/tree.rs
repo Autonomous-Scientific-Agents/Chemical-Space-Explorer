@@ -69,6 +69,7 @@ pub fn children(labels: &[u32], adj: &[u64], elements: &[u32], cfg: &Cfg) -> Vec
     let spare: Vec<i64> = (0..n).map(|v| cfg.max_valence(labels[v]) as i64 - adj[v].count_ones() as i64).collect();
     let mut index: HashMap<u64, usize> = HashMap::new();
     let mut buckets: Vec<Vec<(Node, Option<Form>)>> = Vec::new();
+    let strict_tree = cfg.hetero_chains || cfg.small_ring_heteroatoms;
     for &e in elements {
         let eligible: Vec<usize> = (0..n).filter(|&v| spare[v] > 0 && cfg.pair_allowed(e, labels[v])).collect();
         let max_size = (cfg.max_valence(e) as usize).min(eligible.len()).min(if cfg.allow_rings { n } else { 1 });
@@ -76,6 +77,9 @@ pub fn children(labels: &[u32], adj: &[u64], elements: &[u32], cfg: &Cfg) -> Vec
             combinations(&eligible, size, 0, &mut Vec::new(), &mut |subset| {
                 let mask = subset.iter().fold(0u64, |m, &v| m | 1 << v);
                 let child = add_vertex(labels, adj, e, mask);
+                if strict_tree && !cfg.hetero_ok(&child.0, &child.1, n) {
+                    return;
+                }
                 let (ok, mut form) = accept(&child.0, &child.1, n);
                 if !ok {
                     return;

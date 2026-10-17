@@ -171,6 +171,18 @@ footer a{margin-right:14px}
 </ul>
 <p style="margin-top:6px">Switch off with <code>--no-heteroatom</code>.</p></div></div>
 
+<div class="rule"><div class="name">Strict tier (optional)</div><div>
+<p>The rules above are deliberately basic. The optional <b>strict tier</b> (<code>--rules strict</code>) adds six more filters for chemistry that is technically valence-correct but rarely survives in practice:</p>
+<ul style="margin:0">
+<li><b>S1</b> No chains of three or more heteroatoms (N–N–N, S–N–N, …). Isolated hydrazines and disulfides stay.</li>
+<li><b>S2</b> No S–O bonds.</li>
+<li><b>S3</b> No 3- or 4-membered rings with two or more heteroatoms.</li>
+<li><b>S4</b> No unstable tautomers: enethiols, NH-enamines, ynols and ynamines, imidic and thiono acids, ketenes. Their stable partners (amides, thioamides, thiol acids, carbonyls) are kept.</li>
+<li><b>S5</b> No hemithioacetals.</li>
+<li><b>S6</b> No thioaldehydes or thioketones.</li>
+</ul>
+<p style="margin-top:6px">These remove most of the remaining heteroatom-rich structures. With C, N, O and S, only 24% of molecules at 8 atoms pass; with C, N, O and F, 56% pass.</p></div></div>
+
 <h3>Rules in action: three-carbon molecules</h3>
 <p>Valence allows 9 molecules with three carbons. The strain rules remove the four that are 3-membered rings containing multiple bonds, which leaves 5.</p>
 <div class="mols" id="m-c3"></div>

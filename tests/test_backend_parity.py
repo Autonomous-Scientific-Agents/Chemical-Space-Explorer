@@ -16,6 +16,8 @@ CONFIGS = [
     RuleConfig(hypervalent=True, ban_n_o=False),
     RuleConfig(allow_rings=False, allow_multiple_bonds=False),
     RuleConfig(bond_order_limits=False),
+    RuleConfig.strict(),
+    RuleConfig.strict(hypervalent=True, ban_n_o=False, ban_s_o=False),
 ]
 
 

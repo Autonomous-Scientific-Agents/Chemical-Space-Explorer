@@ -29,6 +29,17 @@ pub struct Cfg {
     pub ban_n_o: bool,
     pub allow_rings: bool,
     pub allow_multiple_bonds: bool,
+    // strict tier (ADR 0015)
+    pub hetero_chains: bool,
+    pub ban_s_o: bool,
+    pub small_ring_heteroatoms: bool,
+    pub tautomers: bool,
+    pub thio_gem: bool,
+    pub thiocarbonyl: bool,
+}
+
+pub fn is_hetero(e: u32) -> bool {
+    e == N || e == O || e == S
 }
 
 impl Cfg {
@@ -66,6 +77,9 @@ impl Cfg {
     }
 
     pub fn pair_allowed(&self, a: u32, b: u32) -> bool {
+        if self.ban_s_o && ((a == S && b == O) || (a == O && b == S)) {
+            return false;
+        }
         if !self.heteroatom {
             return true;
         }
@@ -91,7 +105,42 @@ impl Cfg {
         if labels.iter().zip(adj).any(|(&l, a)| a.count_ones() > self.max_valence(l)) {
             return false;
         }
-        edges(adj).iter().all(|&(u, v)| self.pair_allowed(labels[u], labels[v]))
+        if !edges(adj).iter().all(|&(u, v)| self.pair_allowed(labels[u], labels[v])) {
+            return false;
+        }
+        (0..labels.len()).all(|v| self.hetero_ok(labels, adj, v))
+    }
+
+    /// Strict hereditary rules S1 and S3 around vertex v (see rules.hetero_ok).
+    pub fn hetero_ok(&self, labels: &[u32], adj: &[u64], v: usize) -> bool {
+        let het_v = is_hetero(labels[v]);
+        if self.hetero_chains && het_v {
+            let het_nbrs: Vec<usize> = bits(adj[v]).filter(|&u| is_hetero(labels[u])).collect();
+            if het_nbrs.len() >= 2 {
+                return false;
+            }
+            if het_nbrs.iter().any(|&u| bits(adj[u]).filter(|&w| is_hetero(labels[w])).count() >= 2) {
+                return false;
+            }
+        }
+        if self.small_ring_heteroatoms {
+            let nbrs: Vec<usize> = bits(adj[v]).collect();
+            for i in 0..nbrs.len() {
+                for &b in &nbrs[i + 1..] {
+                    let a = nbrs[i];
+                    let base = het_v as u32 + is_hetero(labels[a]) as u32 + is_hetero(labels[b]) as u32;
+                    if (adj[a] >> b) & 1 == 1 && base >= 2 {
+                        return false; // triangle v-a-b
+                    }
+                    for c in bits(adj[a] & adj[b] & !(1u64 << v)) {
+                        if base + is_hetero(labels[c]) as u32 >= 2 {
+                            return false; // 4-ring v-a-c-b
+                        }
+                    }
+                }
+            }
+        }
+        true
     }
 }
 
@@ -188,6 +237,13 @@ pub fn molecule_ok(cfg: &Cfg, labels: &[u32], adj: &[u64], rings: &RingInfo, ord
             }
         }
     }
+    if cfg.tautomers || cfg.thio_gem || cfg.thiocarbonyl {
+        for x in 0..n {
+            if labels[x] == C && !strict_carbon_ok(cfg, labels, adj, x, order, h) {
+                return false;
+            }
+        }
+    }
     if cfg.heteroatom {
         for x in 0..n {
             if labels[x] != C {
@@ -208,6 +264,44 @@ pub fn molecule_ok(cfg: &Cfg, labels: &[u32], adj: &[u64], rings: &RingInfo, ord
                 }
             }
         }
+    }
+    true
+}
+
+/// Strict molecule rules S4-S6 at carbon x (see rules.strict_carbon_ok).
+fn strict_carbon_ok(cfg: &Cfg, labels: &[u32], adj: &[u64], x: usize, order: &dyn Fn(usize, usize) -> u32,
+                    h: &[u32]) -> bool {
+    let nbrs: Vec<usize> = bits(adj[x]).collect();
+    let double: Vec<usize> = nbrs.iter().copied().filter(|&y| order(x, y) == 2).collect();
+    let single_het: Vec<usize> = nbrs.iter().copied().filter(|&y| is_hetero(labels[y]) && order(x, y) == 1).collect();
+    let single_het_h: Vec<usize> = single_het.iter().copied().filter(|&y| h[y] > 0).collect();
+    if cfg.tautomers {
+        let c_double = double.iter().any(|&y| labels[y] == C);
+        if c_double && single_het_h.iter().any(|&y| labels[y] == S || labels[y] == N) {
+            return false; // enethiol / NH-enamine
+        }
+        if !single_het.is_empty() && nbrs.iter().any(|&y| labels[y] == C && order(x, y) == 3) {
+            return false; // ynol / ynamine / ynethiol
+        }
+        if double.iter().any(|&y| labels[y] == N) && single_het_h.iter().any(|&y| labels[y] == O || labels[y] == S) {
+            return false; // imidic acid
+        }
+        if double.iter().any(|&y| labels[y] == S) && single_het_h.iter().any(|&y| labels[y] == O) {
+            return false; // thiono acid
+        }
+        if c_double && double.iter().any(|&y| labels[y] == O) {
+            return false; // ketene
+        }
+    }
+    if cfg.thio_gem && double.is_empty() && nbrs.iter().all(|&y| order(x, y) == 1)
+        && single_het.len() >= 2 && !single_het_h.is_empty() && single_het.iter().any(|&y| labels[y] == S)
+    {
+        return false; // hemithioacetal / gem-thiol
+    }
+    if cfg.thiocarbonyl && double.iter().any(|&y| labels[y] == S)
+        && nbrs.iter().filter(|&&y| is_hetero(labels[y])).count() == 1
+    {
+        return false; // thioketone / thioaldehyde / thioketene
     }
     true
 }
