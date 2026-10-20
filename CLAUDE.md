@@ -2,9 +2,26 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Status
+## Status (2026-10-20)
 
-The design comes from the plan in `~/.claude/plans/goal-is-to-write-vivid-walrus.md`. The code follows it, with one addition: `skeleton_ok` re-checks the hereditary rules inside the payload, so hand-built skeletons are also filtered.
+Decisions are recorded in `design/adr/` (0001–0015) and features in `design/prd/`.
+- **Done:**
+  - estimator: exact enumeration plus stratified sampling;
+  - basic and strict rule tiers;
+  - optional Rust core with exact parity to Python;
+  - processes and threads;
+  - shards running on ALCF Crux (ensemble_launcher, submitted through IRI);
+  - SMILES dataset export with finalize and verify;
+  - web explorer computed to 17 atoms, plus the method page.
+- **Datasets on ALCF Eagle,** both verified, manifests in `results/`:
+  - `chemuniverse-CNOS-le12`: basic, 42.7×10⁹ molecules;
+  - `chemuniverse-CNOS-le12-strict`: 8.06×10⁹.
+- **Open:**
+  - a public Globus guest collection (only the user can create it);
+  - next sizes: strict CNOS ≤ 13, basic CNOS ≤ 13;
+  - a multi-node finalize before ≥ 14-atom exports;
+  - an optional ban on isolated N–N, S–N and S–S bonds;
+  - rebuilding the site data with hundreds of passes (ADR 0013).
 
 ## Purpose
 

@@ -1,6 +1,6 @@
 # ADR 0012: Multi-node runs on ALCF Crux with sharding, ensemble_launcher and IRI submission
 
-- Status: accepted (implementation in progress; not yet run on Crux)
+- Status: accepted. In production on Crux since 2026-10-16: exact CNOF ≤ 12 and the CNOS ≤ 12 basic and strict datasets.
 - Date: 2026-10-16
 
 ## Context

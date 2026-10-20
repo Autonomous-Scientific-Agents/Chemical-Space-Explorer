@@ -1,6 +1,6 @@
 # PRD 0003: Multi-node runs on Crux
 
-- Status: in progress
+- Status: done 2026-10-17. Success metrics met: 1→4 nodes gave 3.84× (96%); the Crux tests pass; science runs: exact CNOF ≤ 12, then the CNOS ≤ 12 basic and strict datasets.
 - Date: 2026-10-16
 - Decisions: ADR 0012 (ADR 0009 and ADR 0010 for performance)
 
