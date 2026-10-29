@@ -43,6 +43,7 @@ table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:ta
 th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
 th:first-child,td:first-child{text-align:left}
 th{color:var(--muted);font-weight:650;font-size:12px}
+.lit th,.lit td{white-space:normal;text-align:left;vertical-align:top;min-width:120px}.lit td:first-child{white-space:nowrap}.lit td:nth-child(3){min-width:260px}
 tr.hl td{color:var(--good);font-weight:700}
 .seg{display:inline-flex;border:1px solid #365170;border-radius:100px;overflow:hidden;margin:4px 0}
 .seg button{font:inherit;font-size:12px;font-weight:650;background:#152641;color:#b8cbde;border:0;padding:7px 13px;cursor:pointer}
@@ -77,6 +78,7 @@ footer a{margin-right:14px}
 <li><a href="#effect">How much each rule removes</a></li>
 <li><a href="#sampling">Step 3: estimating what you can't list</a></li>
 <li><a href="#extrapolate">Beyond the computed sizes</a></li>
+<li><a href="#literature">Other estimates of chemical space</a></li>
 <li><a href="#checks">How we know it works</a></li>
 <li><a href="#limits">What the numbers do and don't mean</a></li>
 <li><a href="#try">Try it yourself</a></li>
@@ -232,12 +234,41 @@ footer a{margin-right:14px}
 <li><b>Lower edge:</b> the growth factor decays gradually toward the alkane growth rate. Branched alkanes grow by a factor of about 2.95 per carbon in the limit of large size. The lower edge is never allowed to fall below the alkane count itself.</li>
 <li><b>Central value:</b> the geometric midpoint of the two edges.</li>
 </ul>
-<p><b>The upper edge is not a true bound.</b> The computed growth factor per atom keeps <i>rising</i> with size: for pure carbon it goes from 5.4 at 8 atoms to 13 at 17, and for C, N, O, S plus halogens from 10 to 18.5. Larger molecules can close more rings, so each added atom opens more new possibilities than the one before. Holding the last factor constant therefore tends to underestimate. When the computed range was extended from 12 to 17 atoms, the GDB-like preset at 20 atoms rose from about 4×10<sup>18</sup> to about 3×10<sup>20</sup>, above the earlier envelope. Treat the large-size numbers as order-of-magnitude estimates at best. Published estimates of "drug-like" chemical space (about 30 heavy atoms) are often quoted as about 10<sup>60</sup>. Those rest on different assumptions and are themselves only rough.</p>
+<p><b>The upper edge is not a true bound.</b> The computed growth factor per atom keeps <i>rising</i> with size: for pure carbon it goes from 5.4 at 8 atoms to 13 at 17, and for C, N, O, S plus halogens from 10 to 18.5. Larger molecules can close more rings, so each added atom opens more new possibilities than the one before. Holding the last factor constant therefore tends to underestimate. When the computed range was extended from 12 to 17 atoms, the GDB-like preset at 20 atoms rose from about 4×10<sup>18</sup> to about 3×10<sup>20</sup>, above the earlier envelope. Treat the large-size numbers as order-of-magnitude estimates at best. The next section compares them with published estimates.</p>
 <p>For a direct comparison at a computed size: with the GDB-17 elements (C, N, O, S and the halogens) we count about 1.3×10<sup>17</sup> molecules up to 17 atoms. GDB-17 lists 1.66×10<sup>11</sup>, about a million times fewer, because its functional-group, ring and stability filters are far stricter than our basic rules.</p>
 </section>
 
+<section id="literature">
+<h2><span class="num">9</span>Other estimates of chemical space</h2>
+<p>Published estimates of the number of possible organic molecules span more than 50 orders of magnitude. They are not in conflict so much as answering different questions. Each one fixes a size limit (heavy atoms or molecular weight), a set of elements, and a notion of which structures count: any graph that obeys valence, molecules that pass stability filters, or molecules that can actually be made from available reagents.</p>
+<div class="tablewrap"><table class="lit">
+<tr><th>Estimate</th><th>Size limit</th><th>How it was obtained</th><th>Source</th></tr>
+<tr><td>&gt;10<sup>60</sup> (≈10<sup>63</sup>)</td><td>≤ 30 heavy atoms (C, N, O, S)</td><td>Back-of-the-envelope combinatorics in a footnote: about 6 choices per atom along a linear chain (6<sup>30</sup> ≈ 2×10<sup>23</sup> chains), times about 10<sup>40</sup> ways to add up to 4 rings and 10 branch points to each chain. No enumeration and no stability filters; stereoisomers are meant to be included.</td><td>Bohacek, McMartin &amp; Guida <a href="#ref-bohacek">[1]</a></td></tr>
+<tr><td>≈10<sup>33</sup></td><td>≤ 36 heavy atoms (Lipinski-compliant molecules, from PubChem)</td><td>Fit to the GDB-17 counts, log<sub>10</sub>M = 0.584·N·log<sub>10</sub>N + 0.356, extrapolated to N = 36.</td><td>Polishchuk, Madzhidov &amp; Varnek <a href="#ref-polishchuk">[2]</a></td></tr>
+<tr><td>≈2×10<sup>26</sup></td><td>≤ 30 heavy atoms</td><td>The same fit evaluated at N = 30, for a like-for-like comparison with Bohacek (our calculation, not in the paper).</td><td>from <a href="#ref-polishchuk">[2]</a></td></tr>
+<tr><td>10<sup>20</sup>–10<sup>24</sup></td><td>up to 36 atoms</td><td>Combinations of the scaffolds and substituents found in about 3 million known molecules. This is the space reachable with known synthetic chemistry; for example, 6.7×10<sup>23</sup> for a scaffold carrying three substituents.</td><td>Ertl <a href="#ref-ertl">[3]</a></td></tr>
+<tr><td>1.66×10<sup>11</sup></td><td>≤ 17 heavy atoms (C, N, O, S, halogens)</td><td>Exhaustive enumeration (GDB-17), filtered for ring strain, unstable functional groups and heteroatom patterns.</td><td>Ruddigkeit et al. <a href="#ref-gdb17">[4]</a></td></tr>
+<tr><td>≈2.9×10<sup>10</sup></td><td>screening-compound size (drug-like)</td><td>Make-on-demand library: in-stock building blocks combined by parallel one-pot reactions, about 80% synthesis success.</td><td>Grygorenko et al. <a href="#ref-grygorenko">[5]</a></td></tr>
+<tr class="hl"><td>≈1.3×10<sup>17</sup></td><td>≤ 17 heavy atoms (C, N, O, S, halogens)</td><td>This explorer: exact enumeration plus stratified sampling with the basic rules (sections 3–7).</td><td>this work</td></tr>
+</table></div>
+<p><b>What separates the numbers.</b> Three things move an estimate by many orders of magnitude.</p>
+<ul>
+<li><b>Size.</b> Counts grow faster than exponentially with the number of atoms (section 8), so the size limit dominates. The Polishchuk fit alone gives about 10<sup>26</sup> at 30 atoms and 10<sup>33</sup> at 36. Comparing 10<sup>60</sup> at 30 atoms with 10<sup>11</sup> at 17 says little about the methods behind them.</li>
+<li><b>Which structures count.</b> Bohacek's figure is a rough combinatorial count with no stability filtering. The authors call their 10<sup>63</sup> "a very approximate estimate" and conclude only that the true number is "well in excess of 10<sup>60</sup>". They also expect stereoisomers to raise the count, whereas GDB and this explorer count constitutional isomers only. GDB-17 removes many valid but reactive or strained structures, and its filters are much stricter than this explorer's basic rules. At the same 17 atoms and the same elements, our count is about a million times larger than GDB-17 (section 8).</li>
+<li><b>Whether anyone could make them.</b> Ertl's estimate and make-on-demand libraries such as Enamine REAL ask a different question: how many molecules can be made with known reactions and available reagents. These numbers are much smaller than the space of stable structures, but every molecule in them is, in principle, orderable.</li>
+</ul>
+<p><b>Where this explorer fits.</b> Like GDB, it counts exhaustively (exactly, then by unbiased sampling) and applies stability rules, but its rules are looser, so its numbers sit between GDB-17 and the purely combinatorial estimates. The Polishchuk extrapolation is a fit to the GDB-17 counts, so it carries GDB's strict filters to larger sizes. Our growth factor per atom keeps rising up to 17 atoms, which a simple fit of that form may not capture, so extrapolations to 30 or 36 atoms remain uncertain by many orders of magnitude, ours included.</p>
+<ol class="small">
+<li id="ref-bohacek">R. S. Bohacek, C. McMartin &amp; W. C. Guida, "The art and practice of structure-based drug design: a molecular modeling perspective", <i>Med. Res. Rev.</i> 16 (1), 3–50 (1996); the estimate is footnote <i>a</i> to Fig. 6, p. 43. <a href="https://doi.org/10.1002/(SICI)1098-1128(199601)16:1%3C3::AID-MED1%3E3.0.CO;2-6">doi:10.1002/(SICI)1098-1128(199601)16:1&lt;3::AID-MED1&gt;3.0.CO;2-6</a></li>
+<li id="ref-polishchuk">P. G. Polishchuk, T. I. Madzhidov &amp; A. Varnek, "Estimation of the size of drug-like chemical space based on GDB-17 data", <i>J. Comput.-Aided Mol. Des.</i> 27 (8), 675–679 (2013). <a href="https://doi.org/10.1007/s10822-013-9672-4">doi:10.1007/s10822-013-9672-4</a></li>
+<li id="ref-ertl">P. Ertl, "Cheminformatics analysis of organic substituents: identification of the most common substituents, calculation of substituent properties, and automatic identification of drug-like bioisosteric groups", <i>J. Chem. Inf. Comput. Sci.</i> 43 (2), 374–380 (2003). <a href="https://doi.org/10.1021/ci0255782">doi:10.1021/ci0255782</a></li>
+<li id="ref-gdb17">L. Ruddigkeit, R. van Deursen, L. C. Blum &amp; J.-L. Reymond, "Enumeration of 166 billion organic small molecules in the chemical universe database GDB-17", <i>J. Chem. Inf. Model.</i> 52 (11), 2864–2875 (2012). <a href="https://doi.org/10.1021/ci300415d">doi:10.1021/ci300415d</a></li>
+<li id="ref-grygorenko">O. O. Grygorenko, D. S. Radchenko, I. Dziuba, A. Chuprina, K. E. Gubina &amp; Y. S. Moroz, "Generating multibillion chemical space of readily accessible screening compounds", <i>iScience</i> 23 (11), 101681 (2020). <a href="https://doi.org/10.1016/j.isci.2020.101681">doi:10.1016/j.isci.2020.101681</a></li>
+</ol>
+</section>
+
 <section id="checks">
-<h2><span class="num">9</span>How we know it works</h2>
+<h2><span class="num">10</span>How we know it works</h2>
 <ul>
 <li><b>Alkanes.</b> With carbon only, no rings and no multiple bonds, the program reproduces the known numbers of alkane isomers: 1, 1, 1, 2, 3, 5, 9, 18, 35, 75 for 1–10 carbons (OEIS A000602).</li>
 <li><b>Graph counts.</b> The carbon skeleton counts match the number of connected graphs with maximum degree 4.</li>
@@ -249,7 +280,7 @@ footer a{margin-right:14px}
 </section>
 
 <section id="limits">
-<h2><span class="num">10</span>What the numbers do and don't mean</h2>
+<h2><span class="num">11</span>What the numbers do and don't mean</h2>
 <ul>
 <li>These are <b>candidate structures that pass simple rules</b>, not known or synthesizable compounds. For comparison, the CAS Registry lists a few hundred million substances.</li>
 <li>Tautomers count separately (apart from the enol ban). The strain and Bredt rules are heuristics, not energy calculations.</li>
@@ -259,7 +290,7 @@ footer a{margin-right:14px}
 </section>
 
 <section id="try">
-<h2><span class="num">11</span>Try it yourself</h2>
+<h2><span class="num">12</span>Try it yourself</h2>
 <p>The code is pure Python with no dependencies: <a href="https://github.com/Autonomous-Scientific-Agents/Chemical-Space-Explorer">github.com/Autonomous-Scientific-Agents/Chemical-Space-Explorer</a>.</p>
 <pre><code>git clone https://github.com/Autonomous-Scientific-Agents/Chemical-Space-Explorer
 cd Chemical-Space-Explorer
@@ -272,7 +303,7 @@ python -m chemuniverse --max-atoms 11 --elements C N O F --samples 10 --seed 1</
 
 <footer>
 <div><a href="../">← Back to the explorer</a><a href="../agent-traces/">How this was built</a><a href="https://github.com/Autonomous-Scientific-Agents/Chemical-Space-Explorer">Source code</a></div>
-<p>References: B. D. McKay, "Isomorph-free exhaustive generation", <i>J. Algorithms</i> 26 (1998); D. E. Knuth, "Estimating the efficiency of backtrack programs", <i>Math. Comp.</i> 29 (1975); P. C. Chen, "Heuristic sampling: a method for predicting the performance of tree searching programs", <i>SIAM J. Comput.</i> 21 (1992); T. Fink &amp; J.-L. Reymond, <a href="https://doi.org/10.1021/ci600423u">GDB-11</a> (2007); L. C. Blum &amp; J.-L. Reymond, <a href="https://doi.org/10.1021/ja902302h">GDB-13</a> (2009); L. Ruddigkeit et al., <a href="https://doi.org/10.1021/ci300415d">GDB-17</a> (2012); R. S. Bohacek et al., <i>Med. Res. Rev.</i> 16 (1996).</p>
+<p>References: B. D. McKay, "Isomorph-free exhaustive generation", <i>J. Algorithms</i> 26 (1998); D. E. Knuth, "Estimating the efficiency of backtrack programs", <i>Math. Comp.</i> 29 (1975); P. C. Chen, "Heuristic sampling: a method for predicting the performance of tree searching programs", <i>SIAM J. Comput.</i> 21 (1992); T. Fink &amp; J.-L. Reymond, <a href="https://doi.org/10.1021/ci600423u">GDB-11</a> (2007); L. C. Blum &amp; J.-L. Reymond, <a href="https://doi.org/10.1021/ja902302h">GDB-13</a> (2009); L. Ruddigkeit et al., <a href="https://doi.org/10.1021/ci300415d">GDB-17</a> (2012); R. S. Bohacek et al., <i>Med. Res. Rev.</i> 16 (1996); P. G. Polishchuk et al., <a href="https://doi.org/10.1007/s10822-013-9672-4"><i>J. Comput.-Aided Mol. Des.</i></a> 27 (2013); P. Ertl, <a href="https://doi.org/10.1021/ci0255782"><i>J. Chem. Inf. Comput. Sci.</i></a> 43 (2003); O. O. Grygorenko et al., <a href="https://doi.org/10.1016/j.isci.2020.101681"><i>iScience</i></a> 23 (2020).</p>
 </footer>
 </div>
 
