@@ -26,6 +26,7 @@ To add a record, copy the structure of an existing one and use the next number. 
 | [0013](adr/0013-stratified-error-bars.md) | Small-pass stratified error bars are optimistic; use hundreds of passes | accepted |
 | [0014](adr/0014-dataset-storage.md) | Datasets on Eagle (datascience), public release, CNOS first | accepted |
 | [0015](adr/0015-strict-rules.md) | Optional strict rule tier S1–S6 | accepted |
+| [0016](adr/0016-monotone-extrapolation.md) | Explorer extrapolation monotone in the element set | accepted |
 
 ## Features
 

@@ -16,6 +16,7 @@ The user supplied an `index.html` visualization of chemical space and asked to i
   - the low edge decays toward the alkane rate (2.9529), floored at the alkane counts;
   - the central value is the midpoint in log space.
   The extrapolation is labeled as such.
+  ADR 0016 makes the result monotone in the element set.
 - The GDB interpolation model was removed; GDB-13/17/20 remain as reference points.
 - `docs/method/` (added 2026-10-15) is a teaching guide whose example numbers are hard-coded from `enumerate_exact` output. `docs/mode/` redirects to it.
 

@@ -47,9 +47,9 @@ const logAdd=(a,b)=>{const m=Math.max(a,b);return m+Math.log10(1+10**(Math.min(a
 const ALKANE_RATE=Math.log10(2.9529); // asymptotic growth per carbon of alkane isomers
 function dataKey(){return 'C'+['N','O','S'].filter(s=>selected.has(s)).join('')+'_h'+HAL.filter(s=>selected.has(s)).length}
 function canEstimate(){return !!DATA&&selected.has('C')&&[...selected].every(s=>supported.has(s))}
-const seriesCache={};
-// Cumulative log10 counts for sizes 1..MAXN: computed rows, then extrapolation.
-function series(){const key=dataKey();if(seriesCache[key])return seriesCache[key];
+const seriesCache={},rawCache={};
+// Cumulative log10 counts for sizes 1..MAXN of one data key: computed rows, then extrapolation.
+function rawSeries(key){if(rawCache[key])return rawCache[key];
  const rows=DATA.sets[key].rows,out=[];let cum=0,v=0;
  for(const [m,c,se,exact] of rows){cum+=c;v+=se*se;const sd=Math.sqrt(v);
   out.push({n:m,central:Math.log10(cum),low:Math.log10(Math.max(cum-2*sd,cum/10)),high:Math.log10(cum+2*sd),kind:exact?'exact':'sampled',se:sd,cum});}
@@ -60,7 +60,14 @@ function series(){const key=dataKey();if(seriesCache[key])return seriesCache[key
   ch=logAdd(ch,ph); cl=Math.max(logAdd(cl,pl),alkaneLog(m));
   out.push({n:m,central:(cl+ch)/2,low:cl,high:ch,kind:'extrapolated'});
  }
- return seriesCache[key]=out;}
+ return rawCache[key]=out;}
+// Adding an element only adds molecules, but sampling noise in the last growth factor is amplified by
+// extrapolation and can reverse that order. Take, per size, the largest series over all subset keys.
+function series(){const key=dataKey();if(seriesCache[key])return seriesCache[key];
+ const het=key.slice(1,key.indexOf('_')),h=+key.at(-1),subs=[];
+ for(let mask=0;mask<1<<het.length;mask++)for(let j=0;j<=h;j++)
+  subs.push(rawSeries('C'+[...het].filter((_,i)=>mask>>i&1).join('')+'_h'+j));
+ return seriesCache[key]=subs[0].map((_,i)=>subs.reduce((best,s)=>s[i].central>best[i].central?s:best)[i]);}
 function atN(m){return series()[m-1]}
 function powerHTML(log){let e=Math.floor(log),m=10**(log-e);m=Math.round(m*10)/10;if(m>=10){m=1;e++}return `<span class="mant">${m.toFixed(1)}</span><span class="x">×</span>10<sup>${e}</sup>`}
 function sup(n){return String(Math.round(n)).replace(/-/g,'⁻').replace(/[0-9]/g,x=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[Number(x)])}
